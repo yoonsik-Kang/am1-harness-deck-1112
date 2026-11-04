@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PAYROLL010307 연봉조정내역서(new) — 기존 화면 목업</title>
+<!--
+  기존 eHR 화면(PAYROLL010307 연봉조정내역서(new)) 재현 목업.
+  - 화면 구성: processed/ehr/보상(PAYROLL)/급여정보/연봉조정내역서(new)(PAYROLL010307)
+    (README.md·program.json — 메뉴 경로·URL·하위 액션·별칭 A_PAYROLL010307, screenshots/(보상-ehr)128_연봉조정내역서(new)_데이터없음.jpg — 제목 줄·대상 아님 안내 상자 모양)
+    JSP source/ehr/as-is-ehr/EHR-Backoffice/WebContent/WEB-INF/jsp/ehr/payroll/pay/prPYSalarySpecificationListPmds2.jsp (내역서·세부조정내역 표·하단 확인 줄)
+    JSP source/ehr/as-is-ehr/EHR-Backoffice/WebContent/WEB-INF/jsp/ehr/syscommon/errorPage.jsp (개인인증 미통과 때 오류 안내)
+    컨트롤러 source/ehr/as-is-ehr/EHR-Backoffice/src/cj/ehr/payroll/pay/controller/PRPYSalarySpecificationPmds2Controller.java (page·confirm·getCompanyLogo)
+  - 동작: analysis/ehr/보상(PAYROLL)/급여정보/연봉조정내역서(new)(PAYROLL010307)/logic.json 의 흐름(FL)·규칙(BR), queries.json(Q)
+  - 요구사항: 같은 폴더 requirements.json (REQ 글자 그대로, 스크립트로 주입). 화면 영역마다 REQ 배지(data-req="REQ-ID:인수조건번호"), 누르면 그 영역에 초점
+  - 데이터: 전부 샘플(이름·사번·금액·안내문·로고 모두 가상). 메시지 번호·문구는 logic.json dependencies.messages
+-->
+<style>
+  :root {
+    --bg: #ffffff; --text: #333333; --muted: #6b6b6b; --link: #1c5aa6; --line: #c4c4c4;
+    --grid-head: #e8edf3; --row-alt: #f7f9fb; --btn-bg: #f3f3f3; --tab: #dfe6ee;
+    --header: #1a6fb5; --header-text: #ffffff;
+    --note-bg: #fff8e1; --note-line: #e6c65c; --oq: #b35c00; --err-bg: #fdecea; --err-line: #d9534f; --ok-bg: #e8f5e9; --ok-line: #5cb85c; --req: #c00;
+    --rb-bg: #5b3fa8; --rb-text: #ffffff; --hl: #7b5cd6; --panel-bg: #f6f4fb;
+    --sheet-line: #007dc3; --sheet-blue: #007dc3; --tip: #4a8fc0; --tip-mark: #87ceeb; --th-bg: #f5f5f5; --th-top: #9c9c9c; --box2: #73acba;
+    --red: #d00000; --cert-bg: #f2f8ff; --mock: #8a8a8a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1e2227; --text: #e3e6ea; --muted: #a0a7b0; --link: #7fb2ff; --line: #4a525c;
+      --grid-head: #2b323a; --row-alt: #242a30; --btn-bg: #2f363e; --tab: #2b323a; --header: #123a5c;
+      --note-bg: #3a3320; --note-line: #8a7430; --oq: #f0a050; --err-bg: #3d2322; --ok-bg: #213425; --req: #ff7b7b;
+      --rb-bg: #9c85ea; --rb-text: #16121f; --hl: #b29df5; --panel-bg: #23212b;
+      --sheet-line: #3d8fcc; --sheet-blue: #6cb8ec; --tip: #7fb6dc; --tip-mark: #87ceeb; --th-bg: #2b323a; --th-top: #6b737c; --box2: #4f8a98;
+      --red: #ff7070; --cert-bg: #22303e; --mock: #8c939b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1e2227; --text: #e3e6ea; --muted: #a0a7b0; --link: #7fb2ff; --line: #4a525c;
+    --grid-head: #2b323a; --row-alt: #242a30; --btn-bg: #2f363e; --tab: #2b323a; --header: #123a5c;
+    --note-bg: #3a3320; --note-line: #8a7430; --oq: #f0a050; --err-bg: #3d2322; --ok-bg: #213425; --req: #ff7b7b;
+    --rb-bg: #9c85ea; --rb-text: #16121f; --hl: #b29df5; --panel-bg: #23212b;
+    --sheet-line: #3d8fcc; --sheet-blue: #6cb8ec; --tip: #7fb6dc; --tip-mark: #87ceeb; --th-bg: #2b323a; --th-top: #6b737c; --box2: #4f8a98;
+    --red: #ff7070; --cert-bg: #22303e; --mock: #8c939b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 12px/1.45 Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+  a { color: var(--link); text-decoration: none; cursor: pointer; }
+  a:hover { text-decoration: underline; }
+  .topbar { background: var(--header); color: var(--header-text); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .topbar b { font-size: 15px; letter-spacing: .5px; }
+  .topbar .links { font-size: 11px; opacity: .95; }
+  .wrap { padding: 10px 16px 40px; max-width: 1180px; }
+  .crumb { color: var(--muted); font-size: 11px; margin: 4px 0 8px; }
+  .note { background: var(--note-bg); border: 1px solid var(--note-line); padding: 8px 10px; margin-bottom: 10px; font-size: 11.5px; }
+  .note label { white-space: nowrap; cursor: pointer; margin-left: 14px; }
+  .note .note-h { display: flex; justify-content: space-between; align-items: center; gap: 6px 14px; flex-wrap: wrap; }
+  .note dl { display: grid; grid-template-columns: 64px 1fr; gap: 3px 10px; margin: 6px 0 0; }
+  .note dt { color: var(--muted); font-weight: bold; }
+  .note dd { margin: 0; }
+  .note .key { display: inline-block; margin-right: 14px; }
+  .note .src { color: var(--muted); word-break: break-all; font-size: 11px; }
+  @media (max-width: 600px) { .note dl { grid-template-columns: 1fr; gap: 0; } .note dd { margin-bottom: 4px; } }
+  button { font: inherit; color: var(--text); background: var(--btn-bg); border: 1px solid var(--line); border-radius: 3px; padding: 3px 12px; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  select, input[type=text], input[type=password] { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); padding: 1px 4px; height: 22px; max-width: 100%; }
+  .fname { display: none; color: var(--muted); font-size: 10px; font-family: Consolas, monospace; font-weight: normal; }
+  body.show-fname .fname { display: block; }
+  .hidden-f { display: none; }
+  body.show-hidden .hidden-f { display: block; }
+  .oq { color: var(--oq); font-size: 11px; cursor: help; border-bottom: 1px dotted var(--oq); font-weight: normal; }
+  .req { color: var(--req); }
+  .gscroll { overflow-x: auto; }
+  /* ---- 목업 전용 조건 막대 ---- */
+  .sim { border: 1px dashed var(--hl); padding: 6px 8px; margin-bottom: 10px; font-size: 11px; }
+  .sim > .sh { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 4px; }
+  .sim > .sh > b { color: var(--hl); }
+  .sim .opts { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .sim .opts label { white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+  .sim .sess { font-family: Consolas, monospace; }
+  /* ---- eHR 콘텐츠 영역 ---- */
+  .ptitle { display: flex; justify-content: space-between; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 4px; margin-bottom: 12px; }
+  .ptitle h1 { font-size: 14px; color: var(--sheet-blue); margin: 0; }
+  .ptitle .loc { font-size: 10.5px; color: var(--sheet-blue); }
+  .sheet { max-width: 770px; margin: 0 auto; }
+  .secret { font: bold 17px Dotum, "Malgun Gothic", sans-serif; margin: 4px 0; }
+  .stitle { text-align: center; font: bold 18px Dotum, "Malgun Gothic", sans-serif; margin: 2px 0 18px; }
+  .sbox { border: 3px solid var(--sheet-line); padding: 18px 14px 20px; }
+  .sec-h { color: var(--sheet-blue); font-weight: bold; font-size: 13px; margin: 6px 0 10px; }
+  .sec-h::before { content: "›"; display: inline-block; width: 14px; height: 14px; line-height: 13px; text-align: center; background: var(--sheet-blue); color: #fff; border-radius: 2px; margin-right: 5px; font-size: 12px; }
+  .indent { padding-left: 15px; }
+  .tip { font-weight: bold; color: var(--tip); margin: 18px 0 8px; }
+  .tip::before { content: "▶ "; color: var(--tip-mark); }
+  table.tb { width: 100%; min-width: 420px; border-collapse: collapse; text-align: center; border-top: 2px solid var(--th-top); }
+  table.tb th { background: var(--th-bg); padding: 6px 4px; font-size: 11.5px; }
+  table.tb td { padding: 6px 4px; border-bottom: 1px solid var(--line); font-weight: bold; }
+  table.tb td.plain { font-weight: normal; }
+  table.cx { width: 100%; min-width: 520px; border-collapse: separate; border-spacing: 0; text-align: center; }
+  table.cx th { background: var(--th-bg); font-weight: normal; padding: 6px 4px; font-size: 11.5px; }
+  table.cx td { padding: 5px 4px; }
+  table.cx .op { width: 5%; background: transparent; }
+  table.cx th.hlt { border: 2px solid var(--box2); border-bottom: none; }
+  table.cx td.hlb { border: 2px solid var(--box2); border-top: none; font-weight: bold; }
+  table.cx.box2 { border: 2px solid var(--box2); }
+  table.cx td.b { font-weight: bold; }
+  .mocknote { border: 1px dashed var(--line); color: var(--mock); font-size: 11px; padding: 5px 8px; margin: 14px 0 0; }
+  .info { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 10px; font-size: 11.5px; }
+  .info p { margin: 4px 0; }
+  .info .red { color: var(--red); }
+  .info .tag { color: var(--mock); font-size: 10.5px; }
+  .notice2 { margin: 14px 0; font-size: 11.5px; }
+  .foot { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; margin-top: 16px; align-items: start; }
+  .logo { border: 1px dashed var(--line); min-height: 78px; display: flex; align-items: center; justify-content: center; color: var(--mock); font-size: 11px; text-align: center; padding: 6px; }
+  .logo.img { border-style: solid; color: var(--text); font: bold 14px "Malgun Gothic", sans-serif; letter-spacing: 2px; }
+  .fright { display: grid; grid-template-columns: auto auto; gap: 6px 6px; align-items: center; justify-content: end; }
+  .fright .date { grid-column: 1 / -1; text-align: right; font: bold 14px Dotum, "Malgun Gothic", sans-serif; padding-right: 10px; }
+  .fright .lb { text-align: right; font-weight: bold; font-size: 13px; white-space: nowrap; }
+  .fright .vl { font-weight: bold; font-size: 13px; }
+  .certrow { display: contents; }
+  .cert { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .cert input { background: var(--cert-bg); width: 170px; }
+  .btn-ok { background: #2b6fb3; color: #fff; border-color: #1f5c99; font-weight: bold; }
+  .btn-ok::before { content: "▸ "; }
+  .result { grid-column: 1 / -1; color: var(--red); font-weight: bold; min-height: 18px; text-align: left; padding-left: 4px; }
+  .result .tagm { color: var(--muted); font-weight: normal; font-size: 10.5px; }
+  @media (max-width: 600px) { .foot { grid-template-columns: 1fr; } .fright { justify-content: start; } .cert input { width: 140px; } }
+  .restrict { margin: 60px auto 20px; max-width: 520px; border: 1px solid var(--line); padding: 18px; text-align: center; font-size: 13px; }
+  .restrict .ic { display: inline-block; width: 26px; height: 26px; line-height: 26px; border-radius: 50%; background: var(--err-line); color: #fff; font-weight: bold; margin-right: 8px; }
+  .errbox { max-width: 620px; margin: 20px auto; border: 1px solid var(--line); padding: 16px; }
+  .errbox .eimg { border: 1px dashed var(--line); color: var(--mock); padding: 20px; text-align: center; margin-bottom: 14px; }
+  .errbox dl { display: grid; grid-template-columns: 100px 1fr; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; margin: 0; }
+  .errbox dt { color: var(--muted); }
+  .errbox dd { margin: 0; font-size: 14px; }
+  .errbox .full { grid-column: 1 / -1; color: var(--muted); }
+  .log { margin-top: 18px; border: 1px dashed var(--hl); padding: 8px; max-width: 824px; }
+  .log h2 { font-size: 12px; margin: 0 0 4px; }
+  .log .crumb { margin: 0 0 6px; }
+  table.g { border-collapse: collapse; width: 100%; }
+  table.g th { background: var(--grid-head); text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); white-space: nowrap; }
+  table.g td { padding: 2px 6px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); vertical-align: top; }
+  table.g td.n { text-align: right; white-space: nowrap; }
+  table.g td.t { white-space: nowrap; color: var(--muted); }
+  table.g td.wrapc { white-space: normal; min-width: 260px; font-family: Consolas, monospace; font-size: 11px; }
+  table.g td.empty { color: var(--muted); text-align: center; padding: 10px; }
+  .pop { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: none; align-items: flex-start; justify-content: center; z-index: 17; padding-top: 80px; }
+  .pop.on { display: flex; }
+  .pop .box { background: var(--bg); border: 1px solid var(--line); width: 380px; max-width: calc(100% - 32px); padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+  .pop .box h3 { margin: 0 0 8px; font-size: 12px; color: var(--muted); }
+  .pop .box .t { margin: 6px 0 12px; font-size: 13px; }
+  .pop .box .bt { text-align: right; }
+  /* ---- 요구사항(REQ) 배지·초점·패널 ---- */
+  .rb { display: inline-block; font: bold 10px/16px Arial, sans-serif; padding: 0 6px; border-radius: 8px; background: var(--rb-bg); color: var(--rb-text); cursor: pointer; margin-left: 4px; vertical-align: middle; white-space: nowrap; }
+  .rb:hover { text-decoration: none; filter: brightness(1.15); }
+  .topbar .rtoggle { background: var(--rb-bg); color: var(--rb-text); border: none; font-weight: bold; padding: 3px 10px; }
+  body.focusing::before { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 15; }
+  .rfocus { position: relative; z-index: 16; background-color: var(--bg); outline: 2px solid var(--hl); outline-offset: 3px; border-radius: 2px; }
+  .rfocus.rcur { outline-width: 3px; animation: pulse 1.4s ease-out 1; }
+  .rfocus::after { content: attr(data-flabel); position: absolute; left: -5px; top: -21px; background: var(--hl); color: #fff; font: bold 10px/14px Arial, sans-serif; padding: 1px 6px; border-radius: 3px 3px 0 0; white-space: nowrap; pointer-events: none; }
+  :is(th, td, li, button).rfocus:not(.rcur)::after { display: none; }
+  @keyframes pulse { 0% { outline-offset: 12px; } 100% { outline-offset: 3px; } }
+  ol.ac { list-style: none; padding: 0; margin: 6px 0; }
+  ol.ac li { display: flex; gap: 6px; padding: 3px 6px; border-radius: 3px; margin-bottom: 2px; color: var(--muted); }
+  ol.ac li .mk { flex: 0 0 auto; width: 24px; font-family: Consolas, monospace; }
+  .brs, .notes { font-size: 11px; margin-top: 4px; }
+  .br { border-bottom: 1px dotted var(--muted); cursor: help; margin-right: 4px; }
+  .rpanel { position: fixed; top: 0; right: 0; bottom: 0; width: 340px; max-width: 100%; background: var(--panel-bg); color: var(--text); border-left: 1px solid var(--line); overflow-y: auto; transform: translateX(100%); transition: transform .2s; z-index: 20; font-size: 12px; }
+  body.rp-open .rpanel { transform: none; }
+  @media (min-width: 900px) { body.rp-open .wrap, body.rp-open .topbar { margin-right: 340px; } }
+  @media (max-width: 899px) {
+    .rpanel { top: auto; width: 100%; height: 50vh; border-left: none; border-top: 2px solid var(--hl); transform: translateY(100%); box-shadow: 0 -4px 16px rgba(0,0,0,.25); }
+    body.rp-open { padding-bottom: 50vh; }
+  }
+  .rp-head { position: sticky; top: 0; background: var(--panel-bg); border-bottom: 1px solid var(--line); padding: 10px 12px; z-index: 1; }
+  .rp-head .t { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .rp-head b { font-size: 13px; }
+  .rp-hint { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .rq { border-bottom: 1px solid var(--line); padding: 8px 12px; cursor: pointer; scroll-margin-top: 84px; }
+  .rq:hover { background: var(--row-alt); }
+  .rq.on { background: var(--tab); box-shadow: inset 3px 0 0 var(--hl); }
+  .rq .h { display: flex; gap: 6px; align-items: baseline; }
+  .rq .h .rb { margin-left: 0; }
+  .rq .h b { flex: 1; }
+  .rq .st { margin: 4px 0; }
+  .rq .loc { font-size: 11px; color: var(--muted); }
+  .rq .loc span { display: inline-block; border: 1px solid var(--line); border-radius: 8px; padding: 0 6px; margin: 2px 4px 0 0; }
+  .rq .loc span[data-go] { cursor: pointer; }
+  .rq .loc span[data-go]:hover { border-color: var(--hl); }
+  .rq .loc span.here { border-color: var(--hl); color: var(--hl); font-weight: bold; }
+  .rq .h .cnt { color: var(--muted); font-size: 11px; }
+  .rq .x { display: none; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); cursor: default; }
+  .rq.on .x { display: block; }
+  .rq.on .st { font-weight: bold; }
+  .rq .meta { color: var(--muted); font-size: 11px; }
+  .rq .away { margin: 6px 0; color: var(--oq); font-size: 11px; }
+  /* ---- 세부조정내역 표 (PAYROLL010307) ---- */
+  table.dt { width: 100%; min-width: 520px; border-collapse: collapse; text-align: center; border-top: 2px solid var(--th-top); }
+  table.dt th { background: var(--th-bg); font-weight: normal; padding: 6px 4px; font-size: 11.5px; height: 28px; }
+  table.dt td { padding: 5px 4px; border-bottom: 1px solid var(--line); }
+  table.dt td.mg { border-right: 1px solid var(--line); }
+  table.dt tr.sum td { font-weight: bold; }
+  .rtitle { display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <b>CJ eHR</b>
+  <span class="links">개인정보 · <u>보상</u> · 근태/출장 · 복리후생 · … <button class="rtoggle" id="rpToggle" title="요구사항 패널 열기/닫기">요구사항</button></span>
+</div>
+<div class="wrap">
+  <div class="crumb" id="crumb">보상 › 급여정보 › 연봉조정내역서(new)</div>
+  <div class="note">
+    <div class="note-h">
+      <b>기존 화면 재현 목업 · PAYROLL010307 연봉조정내역서(new)</b>
+      <span><label><input type="checkbox" id="optFname"> JSP 입력명 표시</label><label><input type="checkbox" id="optHidden"> 숨김 표시</label></span>
+    </div>
+    <dl>
+      <dt>재현 범위</dt><dd>JSP 그대로: 내역서 한 장(人秘 표시·제목, 개인기본사항, 연봉조정 기본정보, 세부조정내역 표, 조정결과 종합, 조정결과 총합(조정수당 적용), 안내문 1·2번, 하단 로고·오늘 날짜·이름·인증번호 확인 줄), 대상 아님 안내, 오류 안내 화면. 조회 조건은 없음(진입하면 바로 표시). 분석대로 움직이는 것: 개인인증 통과 때만 한 번 표시(BR-001), 대상자만 표시(BR-003), 머리 문구(BR-006), 임금위치 칸(BR-007), 세부조정내역 줄 순서·Merit 칸 병합(BR-008), 특정 회사 '-' 표시·총 인상률(BR-009), 조정 후 기본연봉 선택(BR-010), 조정수당 0 이면 총합 숨김(BR-011), 로고(BR-012), 이미 확인이면 입력 줄 숨김(BR-014), 확인 버튼(BR-015). 서버 요청은 아래 '처리 로그'(목업 전용). 분석 범위 밖이라 뺀 것: 공통 개인인증 화면 자체(아래 조건 막대 버튼으로 대신), eHR 상단·왼쪽 메뉴, 오류 화면 본문(공통 errorPage.jsp — 자리만), 안내문 실제 본문(콘텐츠 관리 등록 글 — 샘플 글), 로고 실제 이미지(자리만), 화면이 부르지 않는 /search.fo(FL-05 — 로그에만), 영어·중국어 화면 글자.</dd>
+      <dt>데이터</dt><dd>전부 샘플 — 사용자 '홍길동'(가상)·사번 S0000001, 기본연봉 50,000,000원 등 금액·항목명도 가상. 스크린샷은 '대상 아님' 상태(데이터 없음)만 있어 내역서 배치는 JSP 대로, 처음 조건은 대상자(YN_ACCESS=Y)·로그인 회사 C10(샘플)·조정수당 없음·미확인·로고 있음·확인 버튼 권한 있음. 샘플 인증번호는 <b>1234</b> (목업 설명).</dd>
+      <dt>표시</dt><dd><span class="key"><a class="rb" style="margin-left:0;cursor:default">REQ-nnn</a> 요구사항 — 누르면 해당 영역에 초점, 패널에 상세 (Esc·바깥 클릭으로 닫기)</span><span class="key"><span class="oq">OQ-nn</span> 미해결 질문</span><span class="key"><span class="req">*</span> 필수</span><span class="key">(목업 설명) 기존 화면에 없는 목업 안내</span></dd>
+      <dt>출처</dt><dd><span class="src">원천 processed/ehr/보상(PAYROLL)/급여정보/연봉조정내역서(new)(PAYROLL010307) · JSP prPYSalarySpecificationListPmds2.jsp, errorPage.jsp · 스크린샷 (보상-ehr)128_연봉조정내역서(new)_데이터없음.jpg<br>분석 analysis/ehr/보상(PAYROLL)/급여정보/연봉조정내역서(new)(PAYROLL010307)</span></dd>
+    </dl>
+  </div>
+
+  <div class="sim" id="simBar" data-common>
+    <div class="sh"><b>목업 전용 조건</b><span>(서버 값을 바꿔 다시 그림 — 조건을 바꾸면 개인인증 통과 상태로 다시 엽니다)</span>
+      <span class="sess" id="sessLbl"></span>
+      <button id="btnCert" title="공통 개인인증 화면 통과 후 메뉴 진입 (세션 g_certAuth=Y, BR-PAYROLL010307-001)">개인인증 통과 후 열기</button>
+      <span data-req="REQ-PAYROLL010307-001:3"><button id="btnReopen" title="새로고침·다시 들어오기 — page.fo 재요청 (BR-PAYROLL010307-001)">다시 열기(새로고침)</button> <a class="rb" data-rb="REQ-PAYROLL010307-001">REQ-001</a></span></div>
+    <div class="opts">
+      <label data-req="REQ-PAYROLL010307-001:4 REQ-PAYROLL010307-005:1" title="필터가 정한 현재 메뉴 PROG_CD = 안내문 PAGEID (BR-PAYROLL010307-005)">메뉴 <select id="sMenu"><option value="PAYROLL010307">보상 (PAYROLL010307)</option><option value="A_PAYROLL010307">해외근무자 (A_PAYROLL010307)</option></select> <a class="rb" data-rb="REQ-PAYROLL010307-001">REQ-001</a><a class="rb" data-rb="REQ-PAYROLL010307-005">REQ-005</a></label>
+      <label title="YN_ACCESS — Q-PAYROLL010307-001 (BR-PAYROLL010307-003)">접근 여부 <select id="sAccess"><option value="Y">Y 연봉조정 대상</option><option value="C">C 처우변경 건</option><option value="N">N 해당 해 행 없음</option></select> <span class="oq" title="OQ-PAYROLL010307-01">OQ-01</span> <span class="oq" title="OQ-PAYROLL010307-02">OQ-02</span></label>
+      <label title="세션 g_comCd — 로그인 회사 (BR-PAYROLL010307-009)">로그인 회사 <select id="sCo"><option value="C10">C10(샘플)</option><option value="A10">A10</option><option value="B10">B10</option><option value="B14">B14</option><option value="B60">B60</option><option value="B61">B61</option></select> <span class="oq" title="OQ-PAYROLL010307-03">OQ-03</span></label>
+      <label title="ds_PaySalSp.RANGEYN (BR-PAYROLL010307-007)">RANGEYN <select id="sRange"><option value="N">N</option><option value="Y">Y</option></select></label>
+      <label title="ds_PaySalSp.FINALSALYN (BR-PAYROLL010307-010)">FINALSALYN <select id="sFinal"><option value="Y">Y</option><option value="N">N</option></select></label>
+      <label title="YEAR_COUNT > 0 (BR-PAYROLL010307-006)"><input type="checkbox" id="sYc"> 같은 해 앞선 연봉조정 있음</label>
+      <label title="ZZ_BFR_OVR_BND·ZZ_FNL_OVR_BND ≠ '0' (BR-PAYROLL010307-011)"><input type="checkbox" id="sBnd"> 조정수당 있음</label>
+      <label title="ds_getConfirmDT.ZZ_CONFIRM_YN (BR-PAYROLL010307-014)"><input type="checkbox" id="sConf"> 이미 확인한 내역서</label>
+      <label title="COMPANY_IMG_YN (BR-PAYROLL010307-012)"><input type="checkbox" id="sLogo" checked> 회사 로고 있음</label>
+      <label title="사용자 버튼 1(24001|350) 권한 (BR-PAYROLL010307-015)"><input type="checkbox" id="sBtn" checked> 확인 버튼 권한</label>
+    </div>
+  </div>
+
+  <div class="ptitle"><h1>연봉조정내역서(new)</h1><span class="loc" id="locLbl">급여정보 &gt;&gt; 연봉조정내역서(new)</span></div>
+
+  <!-- ===== 오류 안내 (errorPage.jsp, 개인인증 미통과) ===== -->
+  <div id="scrError" style="display:none">
+    <div class="errbox" data-req="REQ-PAYROLL010307-001:2">
+      <div class="eimg">[오류 안내 화면 — ehr/syscommon/errorPage (내비게이션 없음)] <a class="rb" data-rb="REQ-PAYROLL010307-001">REQ-001</a></div>
+      <div class="mocknote">(목업 설명) 세션 개인인증 표시(g_certAuth)가 Y 가 아니면 내역서 대신 공통 오류 화면이 나옵니다 (BR-PAYROLL010307-001 · REQ-001 #2). 오류 화면 본문은 공통 화면이라 자리만 둡니다. '개인인증 통과 후 열기'로 다시 들어갈 수 있습니다.</div>
+    </div>
+  </div>
+
+  <!-- ===== 대상 아님 안내 (#div_restrictinfo) — 스크린샷 모양 ===== -->
+  <div id="scrRestrict" style="display:none">
+    <div class="restrict" data-req="REQ-PAYROLL010307-004:1"><span class="ic">!</span><span id="restrictTxt"></span> <a class="rb" data-rb="REQ-PAYROLL010307-004">REQ-004</a>
+      <div class="mocknote" id="restrictNote"></div></div>
+  </div>
+
+  <!-- ===== 내역서 (#div_Salary) ===== -->
+  <div id="scrSheet" style="display:none">
+    <div class="sheet">
+      <div class="hidden-f mocknote">숨김 필드(form#frmSearch): GB_GROUP_ID=<b id="hGrp"></b> · BUDGET_START_DT=<b id="hBud"></b> · SELECT_YN=<b>N</b> (BR-PAYROLL010307-002·016)</div>
+      <div id="shHead" data-req="REQ-PAYROLL010307-001:1 REQ-PAYROLL010307-002:1,5">
+        <div class="secret">人秘 / 對外秘</div>
+        <div class="stitle"><span id="ttl"></span><a class="rb" data-rb="REQ-PAYROLL010307-001">REQ-001</a><a class="rb" data-rb="REQ-PAYROLL010307-002">REQ-002</a><span class="fname">YEAR</span></div>
+      </div>
+      <div class="sbox" id="sbox"></div>
+      <div class="notice2" id="notice2" data-req="REQ-PAYROLL010307-005:1,2"></div>
+      <div class="foot">
+        <div class="logo" id="logoCell" data-req="REQ-PAYROLL010307-006:1"></div>
+        <div class="fright">
+          <div class="date" data-req="REQ-PAYROLL010307-006:2" id="dateBlk"><span id="today"></span><span class="fname">TODAY_TEXT</span></div>
+          <span class="lb" data-req="REQ-PAYROLL010307-006:2">이　　름 :</span><span class="vl"><span id="uNm"></span><span class="fname">g_userNm</span></span>
+          <span class="certrow" id="trConfirm">
+            <span class="lb" data-req="REQ-PAYROLL010307-007:1,2,3"><span class="req">*</span>인증번호 : <a class="rb" data-rb="REQ-PAYROLL010307-007">REQ-007</a></span>
+            <span class="cert" data-req="REQ-PAYROLL010307-007:1,2,3"><input type="password" id="certNo" autocomplete="off" title="인증번호 (필수, 24001|42 · BR-PAYROLL010307-015)"><span id="btnWrap" data-req="REQ-PAYROLL010307-007:6"></span><span class="fname">certificationNo</span></span>
+          </span>
+          <div class="result" id="resultBlk" data-req="REQ-PAYROLL010307-007:2,3,4"><span id="confirmResult"></span> <a class="rb" data-rb="REQ-PAYROLL010307-007">REQ-007</a><span class="fname">confirm_result</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="log" id="logArea" data-common data-req="REQ-PAYROLL010307-001:3 REQ-PAYROLL010307-004:2,3 REQ-PAYROLL010307-007:5">
+    <h2>처리 로그 (목업 전용) — page.fo · confirm.fo · getCompanyLogo.fo <a class="rb" data-rb="REQ-PAYROLL010307-001">REQ-001</a><a class="rb" data-rb="REQ-PAYROLL010307-004">REQ-004</a><a class="rb" data-rb="REQ-PAYROLL010307-007">REQ-007</a></h2>
+    <div class="crumb">서버에서 일어나는 일(FL-PAYROLL010307-01·03·04). 확인 요청의 SELECT_YN·GB_GROUP_ID·BUDGET_START_DT 는 폼 숨김값을 그대로 받아 서버가 본인·대상 건을 정하지 않음(BR-PAYROLL010307-016). 하위 액션 /search.fo(PAYROLL010307_1)는 화면이 부르지 않지만 요청 값으로 조회 구분을 정함(FL-PAYROLL010307-05, BR-PAYROLL010307-017).</div>
+    <div class="gscroll"><table class="g"><thead><tr><th>#</th><th>시각</th><th>요청·처리</th></tr></thead><tbody id="logBody"></tbody></table></div>
+  </section>
+
+  <div class="pop" id="dlg"><div class="box"><h3>웹 페이지 메시지 (alert)</h3><div class="t" id="dlgTxt"></div><div class="bt"><button id="dlgOk">확인</button></div></div></div>
+</div>
+
+<aside class="rpanel" id="rpanel" aria-label="요구사항">
+  <div class="rp-head">
+    <div class="t"><b>요구사항 (requirements.json)</b><button id="rpClose" title="닫기">✕</button></div>
+    <div class="rp-hint">요구사항을 누르면 해당 화면 영역에 초점을 맞추고 상세 내용을 펼칩니다. 화면 위치를 누르면 그 화면으로 갑니다.</div>
+  </div>
+  <div id="rpList"></div>
+</aside>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  let focus = null, ready = false;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const short = id => id.replace(/^REQ-[A-Z0-9_]+-/, 'REQ-');
+  const rb = id => '<a class="rb" data-rb="' + id + '">' + short(id) + '</a>';
+  const R = n => 'REQ-PAYROLL010307-' + n;
+  const oq = n => '<span class="oq" title="' + esc('OQ-PAYROLL010307-' + n + ': ' + (OQS['OQ-PAYROLL010307-' + n] || '')) + '">OQ-' + n + '</span>';
+  const fn = s => '<span class="fname">' + esc(s) + '</span>';
+  $('optFname').onchange = e => { document.body.classList.toggle('show-fname', e.target.checked); refresh(); };
+  $('optHidden').onchange = e => { document.body.classList.toggle('show-hidden', e.target.checked); refresh(); };
+
+  // ---- 요구사항 (requirements.json 그대로 — 스크립트로 주입) ----
+  const REQS = /*__REQS__*/[
+  {
+    "id": "REQ-PAYROLL010307-001",
+    "title": "메뉴 진입 전 개인인증",
+    "statement": "시스템은 연봉조정내역서(new) 메뉴를 열 때마다 개인인증을 거친 경우에만 내역서를 보여 주어야 한다.",
+    "actor": "직원 본인",
+    "acceptance_criteria": [
+      "개인인증을 통과하고 메뉴를 열면 내역서 화면이 보인다.",
+      "개인인증 없이 화면 주소로 들어오면 오류 화면이 보인다.",
+      "내역서를 연 뒤 새로고침하거나 다시 들어오면 개인인증을 다시 해야 한다.",
+      "해외근무자 메뉴로 들어와도 같은 방식으로 동작한다."
+    ],
+    "rules": [
+      "BR-PAYROLL010307-001"
+    ],
+    "priority": "필수"
+  },
+  {
+    "id": "REQ-PAYROLL010307-002",
+    "title": "본인 연봉조정 내역서 조회",
+    "statement": "사용자는 화면을 열면 본인의 가장 최근 확정된 연봉조정 내역서를 볼 수 있어야 한다.",
+    "actor": "직원 본인",
+    "acceptance_criteria": [
+      "제목에 'YYYY년 연봉조정 내역서'가 나오고 맨 위에 '人秘 / 對外秘'가 보인다.",
+      "개인기본사항에 이름·부서·사번·보상직급·직무가 보인다.",
+      "연봉조정 기본정보에 조정 전 기본연봉, 전년도 평가 결과, 임금위치(회사 설정상 숨김이 아니면)가 보인다.",
+      "같은 해 앞선 연봉조정이 있으면 머리 문구에 'YYYY년 MM월'이 붙고, 없으면 '전년도/올해 기본연봉'으로 나온다.",
+      "과거 연봉조정 건을 골라 보는 기능은 없다."
+    ],
+    "rules": [
+      "BR-PAYROLL010307-004",
+      "BR-PAYROLL010307-006",
+      "BR-PAYROLL010307-007"
+    ],
+    "priority": "필수"
+  },
+  {
+    "id": "REQ-PAYROLL010307-003",
+    "title": "세부조정내역·조정결과 표시",
+    "statement": "시스템은 인상 항목별 세부조정내역과 조정결과 종합, 조정수당이 있을 때 조정수당 적용 총합을 보여 주어야 한다.",
+    "actor": "직원 본인",
+    "acceptance_criteria": [
+      "세부조정내역은 Merit 인상 → Merit 세부 항목 → Merit 인상 합계 → 그 밖 항목 순으로 조정 전·조정률·조정 금액·조정 후를 보이고, Merit 세부 항목 줄들의 첫 칸 'Merit 인상'은 세로로 한 칸으로 합쳐 보인다(맨 위 'Merit 인상' 줄은 두 칸을 가로로 합친 칸이며 세로 병합에 들지 않는다).",
+      "로그인 회사가 A10·B10·B14·B60·B61 이면 조정 전·조정 후 금액이 '-' 로 나오고 총 인상률은 항목 인상률의 합으로 나온다.",
+      "조정결과 종합에 총인상액·총 인상률·조정 후 기본연봉이 나오며, 최종연봉 업로드 회사면 최종 연봉 값을, 아니면 조정 후 값을 보인다.",
+      "조정 전·최종 조정수당이 모두 0 이면 '조정결과 총합(조정수당 적용)' 영역이 보이지 않는다."
+    ],
+    "rules": [
+      "BR-PAYROLL010307-008",
+      "BR-PAYROLL010307-009",
+      "BR-PAYROLL010307-010",
+      "BR-PAYROLL010307-011"
+    ],
+    "priority": "필수"
+  },
+  {
+    "id": "REQ-PAYROLL010307-004",
+    "title": "조회 대상 제한",
+    "statement": "시스템은 본인의 연봉조정 내역만, 설정된 정산 연도의 연봉조정 대상자에게만 보여 주어야 한다.",
+    "actor": "직원 본인",
+    "acceptance_criteria": [
+      "설정된 연도에 본인 연봉조정 결과가 없거나 처우변경 건이면 '대상이 아니거나 내역이 존재하지 않습니다.'만 보인다.",
+      "화면이 조회·확인하는 내역은 로그인한 본인 것뿐이다.",
+      "내역서는 화면을 열 때 한 번에 채워지고, 화면은 열린 뒤 다른 직원·다른 건을 고르는 조회를 하지 않는다."
+    ],
+    "rules": [
+      "BR-PAYROLL010307-002",
+      "BR-PAYROLL010307-003",
+      "BR-PAYROLL010307-017"
+    ],
+    "priority": "필수",
+    "notes": "현재 화면이 부르지 않는 /search.fo 는 조회 구분을 요청 값으로 받고(BR-017), 확인 요청도 대상 건·조회 구분을 화면이 보낸 값으로 쓴다(BR-016). 새 시스템에서 서버가 본인·대상 건을 정하는 것은 spring.json risks 에 둔다."
+  },
+  {
+    "id": "REQ-PAYROLL010307-005",
+    "title": "안내문 표시",
+    "statement": "시스템은 메뉴별로 등록된 안내문 두 개를 내역서 안·아래에 보여 주어야 한다.",
+    "actor": "직원 본인",
+    "acceptance_criteria": [
+      "보상 메뉴로 들어오면 본 메뉴 안내문, 해외근무자 메뉴로 들어오면 해외근무자 메뉴 안내문이 나온다.",
+      "1번 안내문은 내역서 상자 안 맨 아래, 2번 안내문은 상자 밖 아래에 나온다."
+    ],
+    "rules": [
+      "BR-PAYROLL010307-005"
+    ],
+    "priority": "중요"
+  },
+  {
+    "id": "REQ-PAYROLL010307-006",
+    "title": "회사 로고·서명 영역",
+    "statement": "시스템은 내역서 하단에 원소속 회사 로고, 오늘 날짜, 로그인 사용자 이름을 보여 주어야 한다.",
+    "actor": "직원 본인",
+    "acceptance_criteria": [
+      "원소속 회사·BU 의 로고가 등록돼 있으면 하단 왼쪽에 로고가 나오고, 없으면 나오지 않는다.",
+      "오늘 날짜가 yyyy-MM-dd 로, 이름 칸에 로그인 사용자 이름이 나온다."
+    ],
+    "rules": [
+      "BR-PAYROLL010307-012",
+      "BR-PAYROLL010307-013"
+    ],
+    "priority": "중요"
+  },
+  {
+    "id": "REQ-PAYROLL010307-007",
+    "title": "내역서 확인(개인인증번호)",
+    "statement": "사용자는 개인인증번호를 입력하고 '확인'을 눌러 연봉조정 내역서를 확인 처리할 수 있어야 한다.",
+    "actor": "직원 본인",
+    "acceptance_criteria": [
+      "인증번호를 비우고 '확인'을 누르면 인증번호가 필수라는 알림(항목명 '인증번호')이 나오고 커서가 인증번호 칸으로 가며 처리되지 않는다.",
+      "인증번호가 맞으면 '인증 되었습니다' 알림 후 입력 줄이 사라지고 '인증완료(확인일)'이 보인다.",
+      "인증번호가 틀리면 '사용자 인증이 일치하지 않습니다.'가 빨간 글씨로 보이고 확인 처리되지 않는다.",
+      "이미 확인한 내역서를 열면 입력 줄 없이 '인증완료(확인일)'이 보인다.",
+      "확인 처리는 화면에 보이는 본인 연봉조정 건(화면이 함께 보낸 그룹·예산 시작일)에 적용된다.",
+      "'확인' 버튼은 버튼 권한이 있는 사용자에게만 보인다."
+    ],
+    "rules": [
+      "BR-PAYROLL010307-014",
+      "BR-PAYROLL010307-015",
+      "BR-PAYROLL010307-016"
+    ],
+    "priority": "필수",
+    "notes": "현재 확인 요청은 대상 건·조회 구분을 화면 폼의 숨김 값으로 보내고 서버가 다시 정하지 않는다(BR-016). 새 시스템에서 서버가 본인·대상 건을 정하는 것은 spring.json risks 에 둔다. 필수 입력 알림 문구는 OQ-04."
+  }
+];
+  const BR_TITLES = /*__BRS__*/{
+  "BR-PAYROLL010307-001": "메뉴 진입 전 개인인증을 거쳐야 화면이 열린다",
+  "BR-PAYROLL010307-002": "본인 내역만 조회한다 (SELECT_YN=N)",
+  "BR-PAYROLL010307-003": "설정된 정산 연도의 연봉조정 대상이어야 내역서를 보인다",
+  "BR-PAYROLL010307-004": "가장 최근 최종확정 연봉조정 건을 보인다",
+  "BR-PAYROLL010307-005": "안내문은 현재 메뉴(본 메뉴 / 해외근무자 메뉴)별로 두 영역",
+  "BR-PAYROLL010307-006": "내역서 제목과 기본연봉 머리 문구 (연중 조정이면 연월 표시)",
+  "BR-PAYROLL010307-007": "임금위치 표시 여부 (RANGEYN)",
+  "BR-PAYROLL010307-008": "세부조정내역 줄 순서와 'Merit 인상' 묶음",
+  "BR-PAYROLL010307-009": "특정 회사는 세부조정내역의 조정 전·후 금액을 '-' 로, 총 인상률은 항목 인상률 합으로",
+  "BR-PAYROLL010307-010": "조정 후 기본연봉은 최종연봉 업로드 여부에 따라 고른다",
+  "BR-PAYROLL010307-011": "조정수당이 없으면 '조정결과 총합(조정수당 적용)' 영역을 숨긴다",
+  "BR-PAYROLL010307-012": "원소속 회사 로고를 내역서 하단에 보인다",
+  "BR-PAYROLL010307-013": "하단 서명 영역: 오늘 날짜와 로그인 사용자 이름",
+  "BR-PAYROLL010307-014": "이미 확인한 내역서는 인증번호 입력 줄을 숨기고 확인일을 보인다",
+  "BR-PAYROLL010307-015": "개인인증번호가 맞으면 연봉조정 내역서를 확인 처리한다",
+  "BR-PAYROLL010307-016": "확인 대상 건과 조회 구분은 화면이 보낸 값을 그대로 쓴다",
+  "BR-PAYROLL010307-017": "화면이 쓰지 않는 조회 URL(/search.fo)이 요청 값으로 조회 구분을 정한다"
+};
+  const OQS = /*__OQS__*/{
+  "OQ-PAYROLL010307-01": "같은 해에 연봉조정과 처우변경을 모두 받은 직원도 연봉조정내역서(new)를 볼 수 있어야 하나요?",
+  "OQ-PAYROLL010307-02": "내역서를 열 수 있는 연도는 '연봉조정 내역 연도' 설정값 한 해로 정하는 것이 맞나요, 아니면 가장 최근 확정된 연봉조정이면 되나요?",
+  "OQ-PAYROLL010307-03": "세부조정내역의 조정 전·조정 후 금액을 '-' 로 가리는 회사는 어디이고, 로그인 회사와 원소속 회사 중 어느 쪽 기준이어야 하나요?",
+  "OQ-PAYROLL010307-04": "인증번호를 비우고 '확인'을 눌렀을 때 나오는 필수 입력 알림 문구는 무엇인가요?"
+};
+  document.querySelectorAll('#simBar .oq').forEach(el => { el.title = el.title + ': ' + (OQS[el.title] || ''); });
+
+  // ================= 샘플 데이터 =================
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const TODAY = ymd(new Date());                         // TODAY_TEXT yyyy-MM-dd (BR-PAYROLL010307-013)
+  const CURRENT_DATE = TODAY.replace(/-/g, '');          // 시차 적용 오늘 yyyymmdd (FN-EHR.EhrTaskCommonService-getTimezoneTodayString, 목업은 브라우저 시간대)
+  const Y = new Date().getFullYear();                    // 샘플: 가장 최근 최종확정 연봉조정 연도 (헤더 YEAR)
+  const MSG = {                                          // logic.json dependencies.messages (세트,번호)
+    m357: '대상이 아니거나 내역이 존재하지 않습니다.', m173: '인증 되었습니다', m69: '사용자 인증이 일치하지 않습니다.', m1282: '인증완료'
+  };
+  const DASH_CO = ['A10', 'B10', 'B14', 'B60', 'B61'];   // BR-PAYROLL010307-009 (JSP 384-403 등)
+  const SAMPLE_CERT = '1234';                            // (목업 설명) 샘플 개인인증번호
+  const USER = { nm: '홍길동', dept: '샘플팀', empno: 'S0000001', grade: 'G3(샘플)', job: '샘플직무' };   // 가상 인물
+  const PMDS_TITLE = '년 평가 결과(샘플 제목)';            // 헤더 PMDS_TITLE (샘플)
+  const MONTHS = ['07', '01'];                           // ds_getMonth.BUDGET_MONTH 첫 행·둘째 행 (샘플)
+  const S = { cert: 'Y', menu: 'PAYROLL010307', access: 'Y', co: 'C10', range: 'N', fin: 'Y', yc: false, bnd: false, conf: false, confDt: '', logo: true, btn: true, screen: '' };
+  const LOG = [];
+  const num = n => Math.round(n).toLocaleString('en-US');   // 서버가 쉼표 서식 문자열로 내려줌 (BR-PAYROLL010307-010)
+  const p2 = n => n.toFixed(2);
+  function data() {
+    const bfr = 50000000;
+    // ds_PaySalSpInfo — 묶음 코드 ZZ_INCR_EX 별 샘플 줄 (BR-PAYROLL010307-008). 서버가 보내는 순서와 상관없이 JSP 가 묶음 순서로 그림
+    const mk = (ex, descr, pct) => ({ ex, descr, bfr, pct, amt: bfr * pct / 100, aft: bfr + bfr * pct / 100 });
+    const info = [mk('ETC', '기타 조정(샘플)', 1), mk('HRM', '세부 항목 B(샘플)', 0.5), mk('MERIT', '', 2), mk('SUM', '', 3), mk('LEA', '세부 항목 A(샘플)', 0.5)];
+    const amtTot = bfr * 4 / 100, aftSal = bfr + amtTot, finalSal = aftSal + 100000;
+    const bfrOvr = S.bnd ? 1200000 : 0, fnlOvr = S.bnd ? 600000 : 0;
+    const thisSal = S.fin === 'Y' ? aftSal : finalSal;   // BR-PAYROLL010307-010
+    return { bfr, info, amtTot, pctTot: '4.00', pctSum: '4.00', aftSal, finalSal, thisSal, bfrOvr, fnlOvr,
+      bfrSalTot: bfr + bfrOvr, aftIncPct: p2((thisSal + fnlOvr) / (bfr + bfrOvr) * 100 - 100),
+      val: 'B', range: '샘플-2', grp: 'SAMPLE_GRP_' + Y, bud: Y + '-' + MONTHS[0] + '-01' };
+  }
+
+  // ================= 화면 진입 FL-PAYROLL010307-01 =================
+  function log(t) { LOG.push({ at: new Date().toLocaleTimeString('ko-KR'), t }); }
+  function enter() {
+    log('GET /ehr/payroll/pay/PRPYSalarySpecificationPmds2/page.fo — 필터가 현재 메뉴 PROG_CD=' + S.menu + ' 를 둠 (FN-EHR.HtmlAuthorityFilter-doFilter)');
+    if (S.cert !== 'Y') {
+      log('세션 g_certAuth=' + S.cert + ' → ehr/syscommon/errorPage (BR-PAYROLL010307-001 · REQ-001 #2)');
+      show('scrError'); renderLog(); return;
+    }
+    log('SELECT_YN=N, CURRENT_DATE=' + CURRENT_DATE + ' — 대상 사번 = 세션 g_emplId (BR-PAYROLL010307-002 · REQ-004 #2) · 안내문 PAGEID=' + S.menu + ' COUNTER=1·2 (BR-PAYROLL010307-005) · COMPANY_IMG_YN=' + (S.logo ? 'Y' : 'N') + ' (BR-PAYROLL010307-012)');
+    log('Q-PAYROLL010307-001 getCustomYNCheck → YN_ACCESS=' + S.access + ' (설정 연도 행 ROWNUM=1, CNG 면 C, 없으면 N — BR-PAYROLL010307-003)');
+    log('연봉조정내역서 조회(SELECT_YN=N, BUDGET_START_DT 없음) → 가장 최근 최종확정 건 ' + Y + '년 (BR-PAYROLL010307-004 · REQ-002 #5) — 판정과 관계없이 실행');
+    log('세션 g_certAuth ← N, JSP 를 서버에서 그려 보냄 (BR-PAYROLL010307-001 · REQ-001 #3)');
+    if (S.access !== 'Y') show('scrRestrict');
+    else {
+      if (S.logo) log('GET getCompanyLogo.fo — Q-PAYROLL010307-002: ZHA_C0045_T_03.ZZ_HRH_PHOTO, 세션 g_comCdOrg·g_businessUnitSave (FL-PAYROLL010307-04, BR-PAYROLL010307-012)');
+      show('scrSheet');
+    }
+    S.cert = 'N'; syncSim();
+    renderLog();
+  }
+  function show(id) {
+    ['scrError', 'scrRestrict', 'scrSheet'].forEach(s => $(s).style.display = s === id ? '' : 'none');
+    S.screen = id;
+    if (id === 'scrRestrict') {
+      $('restrictTxt').textContent = MSG.m357 + ' (24000,357)';
+      $('restrictNote').innerHTML = '(목업 설명) 접근 여부 YN_ACCESS=' + S.access + (S.access === 'C' ? ' — 그 해 결과 한 건이 처우변경(CNG) 건이면 연봉조정 건이 함께 있어도 막힘 ' + oq('01') : ' — 설정 연도에 본인 결과 없음 ' + oq('02')) + ' (BR-PAYROLL010307-003 · REQ-004 #1)';
+    }
+    if (id === 'scrSheet') renderSheet();
+    syncSim(); refresh();
+  }
+
+  // ================= 내역서 그리기 FL-PAYROLL010307-02 =================
+  const tip = (t, extra) => '<div class="tip">' + t + (extra || '') + '</div>';
+  // 머리 문구 (BR-PAYROLL010307-006)
+  function heads() {
+    if (S.yc) {
+      const a = Y + '년 ' + MONTHS[1] + '월 ', b = Y + '년 ' + MONTHS[0] + '월 ';
+      return { bfYearSal: a + '기본연봉(원)', payYear: b + '기본연봉(원)', bfrTotSum: a + '기본연봉+조정수당(원)', aftSalSum: b + '기본연봉(원)', aftOvrSum: b + '조정수당(원)' };
+    }
+    return { bfYearSal: (Y - 1) + '년 기본연봉(원)', payYear: Y + '년 기본연봉(원)', bfrTotSum: (Y - 1) + '년 기본연봉+조정수당(원)', aftSalSum: Y + '년 기본연봉', aftOvrSum: Y + '년 조정수당(원)' };
+  }
+  const hTip = () => ' title="' + (S.yc ? 'YEAR_COUNT>0 — 월 목록(ds_getMonth)으로 연월 표시' : 'YEAR_COUNT=0 — 전년/올해 문구') + ' (BR-PAYROLL010307-006 · REQ-002 #4)"';
+  function personal() {
+    const h = ['이름', '부서', '사번', '보상직급', '직무'];
+    const v = [[USER.nm, 'EMPL_NM'], [USER.dept, 'DEPT_NM'], [USER.empno, 'ZZ_EMPNO'], [USER.grade, 'GRADE'], [USER.job, 'JOBTITLE']];
+    return '<div class="sec-h">개인기본사항</div><div class="indent" data-req="' + R('002') + ':2">' +
+      '<div class="gscroll"><table class="tb"><tr>' + h.map((x, i) => '<th>' + x + (i === 0 ? rb(R('002')) : '') + '</th>').join('') + '</tr>' +
+      '<tr>' + v.map(([t, f]) => '<td>' + esc(t) + fn(f) + '</td>').join('') + '</tr></table></div></div>';
+  }
+  function basic(d, H) {   // RANGEYN N: 3칸, Y: 임금위치 뺀 2칸 (BR-PAYROLL010307-007)
+    const h = [[H.bfYearSal, 'BF_YEAR_SAL', true], [(Y - 1) + PMDS_TITLE, 'BF_YEAR_RST']].concat(S.range === 'N' ? [['임금위치', 'ZZ_BFR_RANGE_TEXT']] : []);
+    const v = [[num(d.bfr), 'ZZ_BFR_SAL'], [d.val, 'ZZ_VAL_RST']].concat(S.range === 'N' ? [[d.range, 'ZZ_BFR_RANGE']] : []);
+    return '<div data-req="' + R('002') + ':3,4">' + tip('연봉조정 기본정보', rb(R('002'))) +
+      '<div class="gscroll"><table class="tb"><tr>' + h.map(([t, f, hh]) => '<th' + (hh ? hTip() : '') + '>' + esc(t) + fn(f) + '</th>').join('') + '</tr><tr>' + v.map(([t, f]) => '<td class="plain">' + esc(t) + fn(f) + '</td>').join('') + '</tr></table></div>' +
+      (S.range === 'Y' ? '<div class="mocknote">(목업 설명) RANGEYN=Y — 임금위치 칸 없음 (BR-PAYROLL010307-007 · REQ-002 #3)</div>' : '') + '</div>';
+  }
+  function detail(d) {   // 세부조정내역 (BR-PAYROLL010307-008·009)
+    const dash = DASH_CO.includes(S.co);
+    const amt = (x, f) => '<td' + (dash ? ' title="로그인 회사 ' + S.co + ' — \'-\' 표시 (BR-PAYROLL010307-009 · REQ-003 #2)"' : '') + '>' + (dash ? '-' : num(x)) + fn(f) + '</td>';
+    const cells = x => amt(x.bfr, 'ZZ_BFR_SAL') + '<td>' + p2(x.pct) + fn('ZZ_CHANGE_PCT') + '</td><td>' + num(x.amt) + fn('ZZ_CHANGE_AMT') + '</td>' + amt(x.aft, 'ZZ_AFT_SAL');
+    const merit = d.info.filter(x => x.ex === 'MERIT'), sub = d.info.filter(x => x.ex === 'LEA' || x.ex === 'HRM'),
+      sum = d.info.filter(x => x.ex === 'SUM'), etc = d.info.filter(x => !['MERIT', 'LEA', 'HRM', 'SUM'].includes(x.ex));
+    let rows = merit.map(x => '<tr><td colspan="2" title="ZZ_INCR_EX=MERIT (24003,4824)">Merit 인상</td>' + cells(x) + '</tr>').join('');
+    // genRowspan('MGincr'): LEA·HRM 줄 첫 칸 'Merit 인상'(span)만 세로로 합침. MERIT 줄 칸은 글자가 input 값이라 .text() 가 공백뿐 → 병합 안 됨 (FL-PAYROLL010307-02 #7)
+    rows += sub.map((x, i) => '<tr>' + (i === 0 ? '<td class="mg" rowspan="' + sub.length + '" title="ZZ_INCR_EX=LEA·HRM — genRowspan 으로 세로 병합 (BR-PAYROLL010307-008 · REQ-003 #1)">Merit 인상</td>' : '') + '<td>' + esc(x.descr) + fn('DESCR · ' + x.ex) + '</td>' + cells(x) + '</tr>').join('');
+    rows += sum.map(x => '<tr class="sum"><td colspan="2" title="ZZ_INCR_EX=SUM (24003,4839)">Merit 인상 합계</td>' + cells(x) + '</tr>').join('');
+    rows += etc.map(x => '<tr><td colspan="2">' + esc(x.descr) + fn('DESCR · ' + x.ex) + '</td>' + cells(x) + '</tr>').join('');
+    return '<div data-req="' + R('003') + ':1,2">' + tip('세부조정내역', rb(R('003')) + (dash ? ' ' + oq('03') : '')) +
+      '<div class="gscroll"><table class="dt"><tr><th colspan="2">조정항목</th><th>조정 전(원)</th><th>조정률(%)</th><th>조정 금액(원)</th><th>조정 후(원)</th></tr>' + rows + '</table></div></div>';
+  }
+  function aftTd(d) {   // BR-PAYROLL010307-010
+    return '<td class="b" title="FINALSALYN=' + S.fin + ' → ' + (S.fin === 'Y' ? 'ds_PaySalSpTotal.ZZ_AFT_SAL' : 'ds_PaySalSpTotal.ZZ_FINAL_SAL') + ' (BR-PAYROLL010307-010 · REQ-003 #3)">' + num(d.thisSal) + fn(S.fin === 'Y' ? 'ds_PaySalSpTotal.ZZ_AFT_SAL' : 'ds_PaySalSpTotal.ZZ_FINAL_SAL') + '</td>';
+  }
+  function summary(d, H) {
+    const dash = DASH_CO.includes(S.co);
+    return '<div data-req="' + R('003') + ':2,3 ' + R('002') + ':4">' + tip('조정결과 종합', rb(R('003')) + rb(R('002'))) +
+      '<div class="gscroll"><table class="cx box2"><tr><th>총인상액(원)</th><td class="op"></td><th>총 인상률(%)</th><td class="op"></td><th' + hTip() + '>' + esc(H.payYear) + fn('PAY_YEAR') + '</th></tr>' +
+      '<tr><td>' + num(d.amtTot) + fn('ZZ_CNG_AMT_TOT') + '</td><td class="op"></td><td title="' + (dash ? '로그인 회사 ' + S.co + ' → ZZ_CNG_PCT_SUM(항목 인상률 합, 소수 2자리 절사)' : 'ZZ_CNG_PCT_TOT') + ' (BR-PAYROLL010307-009 · REQ-003 #2)">' + (dash ? d.pctSum : d.pctTot) + fn(dash ? 'ZZ_CNG_PCT_SUM' : 'ZZ_CNG_PCT_TOT') + '</td><td class="op"></td>' + aftTd(d) + '</tr></table></div></div>';
+  }
+  function totalBnd(d, H) {   // #hidden_yn (BR-PAYROLL010307-011)
+    if (d.bfrOvr === 0 && d.fnlOvr === 0) return '<div class="mocknote" data-req="' + R('003') + ':4">(목업 설명) 조정결과 총합(조정수당 적용) 영역 숨김 — 조정 전·최종 조정수당이 모두 \'0\' (BR-PAYROLL010307-011 · REQ-003 #4) ' + rb(R('003')) + '</div>';
+    return '<div data-req="' + R('003') + ':4 ' + R('002') + ':4">' + tip('조정결과 총합(조정수당 적용)', rb(R('003')) + rb(R('002'))) +
+      '<div class="gscroll"><table class="cx box2"><tr><th' + hTip() + '>' + esc(H.bfrTotSum) + fn('ZZ_BFR_SAL_TOT_SUM') + '</th><td class="op"></td><th' + hTip() + '>' + esc(H.aftSalSum) + fn('ZZ_AFT_SAL_SUM') + '</th><td class="op"></td><th' + hTip() + '>' + esc(H.aftOvrSum) + fn('ZZ_AFT_OVR_BND_SUM') + '</th><td class="op"></td><th>전년대비 총 인상율(%)</th></tr>' +
+      '<tr><td class="b">' + num(d.bfrSalTot) + fn('ZZ_BFR_SAL_TOT') + '</td><td class="op"></td>' + aftTd(d) + '<td class="op"></td><td class="b">' + num(d.fnlOvr) + fn('ZZ_AFT_OVR_BND ← ds_PaySalSpTotal.ZZ_FNL_OVR_BND') + '</td><td class="op"></td><td class="b">' + d.aftIncPct + fn('ZZ_AFT_INC_PCT') + '</td></tr></table></div></div>';
+  }
+  function notice1() {   // ds_contents (COUNTER=1) 본문 HTML — 샘플 글, 상자 안 맨 아래
+    return '<div class="info" data-req="' + R('005') + ':1,2">' +
+      '<p class="tag">[안내문 1번 — 콘텐츠 관리 PAGEID=' + S.menu + ', COUNTER=1, 샘플 글] ' + rb(R('005')) + '</p>' +
+      (S.menu === 'A_PAYROLL010307' ? '<p>※ 해외근무자 메뉴 안내 글 (샘플)</p>' : '<p>※ 보상 메뉴 안내 글 (샘플)</p>') +
+      '<p>▶ Merit 인상 : 평가 결과에 따라 정해집니다. (샘플)</p><p class="red">본 내역서 관련 사항은 타인에게 공개해서는 안 됩니다. (샘플)</p></div>';
+  }
+  function renderSheet() {
+    const d = data(), H = heads();
+    $('ttl').textContent = Y + '년 연봉조정 내역서';
+    $('hGrp').textContent = d.grp; $('hBud').textContent = d.bud;
+    $('sbox').innerHTML = personal() + '<div class="sec-h" style="margin-top:22px">연봉조정 내역</div><div class="indent">' +
+      basic(d, H) + detail(d) + summary(d, H) + totalBnd(d, H) + '</div>' + notice1();
+    $('notice2').innerHTML = '<span class="info tag" style="border:0;padding:0">[안내문 2번 — 콘텐츠 관리 PAGEID=' + S.menu + ', COUNTER=2 (ds_contents2), 상자 밖, 샘플 글]</span> ' + rb(R('005')) + '<br>※ 문의: 소속 회사 보상 담당자 (샘플)';
+    $('logoCell').className = 'logo' + (S.logo ? ' img' : '');
+    $('logoCell').innerHTML = (S.logo ? '[샘플회사 로고 이미지]' : '(목업 설명) COMPANY_IMG_YN=N — 로고 없음') + ' ' + rb(R('006')) + fn('getCompanyLogo.fo · Q-PAYROLL010307-002');
+    $('today').textContent = TODAY; $('uNm').textContent = USER.nm;
+    // 사용자 버튼 1 — 버튼 권한이 있을 때만 (BR-PAYROLL010307-015)
+    $('btnWrap').innerHTML = S.btn ? '<button class="btn-ok" id="btnConfirm" title="user1ButtonOnClick() → /confirm.fo (FL-PAYROLL010307-03, BR-PAYROLL010307-015)">확인</button>' + rb(R('007'))
+      : '<span class="mocknote" style="margin:0;display:inline-block">(목업 설명) 버튼 권한 없음 — \'확인\' 버튼이 그려지지 않음 (BR-PAYROLL010307-015 · REQ-007 #6)</span>';
+    if (S.btn) $('btnConfirm').onclick = user1ButtonOnClick;
+    // BR-PAYROLL010307-014: 이미 확인한 내역서는 입력 줄 숨김
+    $('trConfirm').style.display = S.conf ? 'none' : '';
+    $('confirmResult').innerHTML = S.conf ? esc(MSG.m1282 + '(' + S.confDt + ')') + ' <span class="tagm">(24001,1282 · BR-PAYROLL010307-014 · REQ-007 #4)</span>' : '';
+    $('certNo').value = '';
+  }
+
+  // ================= 확인 FL-PAYROLL010307-03 =================
+  function alertBox(t) { $('dlgTxt').textContent = t; $('dlg').classList.add('on'); }
+  $('dlgOk').onclick = () => $('dlg').classList.remove('on');
+  function user1ButtonOnClick() {
+    $('confirmResult').innerHTML = '';
+    const v = $('certNo').value;
+    if (!v) { alertBox('(임시문구-asis 미정의) 인증번호: 필수 입력 항목입니다. (checkFormValidation → 공통 메시지 ERR_REQUIRED, 항목명 인증번호 24001,42 · BR-PAYROLL010307-015 · REQ-007 #1 · OQ-04)'); $('certNo').focus(); return refresh(); }
+    const d = data();
+    log('POST confirm.fo — GB_GROUP_ID=' + d.grp + ', BUDGET_START_DT=' + d.bud + ', SELECT_YN=N (폼 숨김값 그대로, 서버가 정하지 않음 — BR-PAYROLL010307-016 · REQ-007 #5), certificationNo=****, CURRENT_DATE=' + CURRENT_DATE);
+    const ok = v === SAMPLE_CERT;
+    log('FN-EHR.CertificationPersonService-getUserConfirm → confirm=' + (ok ? 'Y' : 'N') + ' (BR-PAYROLL010307-015)');
+    if (ok) {
+      S.conf = true; S.confDt = TODAY;
+      log('FN-EHR.PRPayrollService-updatePRPYSalarySpecificationConfirm — 확인 여부 Y·확인일=오늘, ds_getConfirmDT 첫 행 ZZ_CONFIRM_DT 반환 (BR-PAYROLL010307-015 · REQ-007 #5). 이미 확인한 건 재확인 막는 검사 없음');
+      alertBox(MSG.m173 + ' (24000,173 · BR-PAYROLL010307-015 · REQ-007 #2)');
+      $('trConfirm').style.display = 'none';
+      $('confirmResult').innerHTML = esc(MSG.m1282 + '(' + S.confDt + ')') + ' <span class="tagm" title="(목업 설명) 확인일 표시 형식은 분석에 없음 — 샘플">(24001,1282 · BR-PAYROLL010307-014 · REQ-007 #2)</span>';
+      $('sConf').checked = true;
+    } else {
+      $('confirmResult').innerHTML = esc(MSG.m69) + ' <span class="tagm">(24000,69 · BR-PAYROLL010307-015 · REQ-007 #3)</span>';
+    }
+    $('certNo').value = '';   // 결과와 상관없이 비움
+    renderLog(); refresh();
+  }
+  $('certNo').addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+
+  function renderLog() {
+    $('logBody').innerHTML = LOG.length ? LOG.map((m, i) => '<tr><td class="n">' + (i + 1) + '</td><td class="t">' + esc(m.at) + '</td><td class="wrapc">' + esc(m.t) + '</td></tr>').reverse().join('')
+      : '<tr><td class="empty" colspan="3">아직 요청이 없습니다.</td></tr>';
+    refresh();
+  }
+
+  // ================= 목업 조건 막대 =================
+  const SIM = { sMenu: 'menu', sAccess: 'access', sCo: 'co', sRange: 'range', sFinal: 'fin' };
+  const SIMC = { sYc: 'yc', sBnd: 'bnd', sConf: 'conf', sLogo: 'logo', sBtn: 'btn' };
+  function syncSim() {
+    Object.entries(SIM).forEach(([id, k]) => $(id).value = S[k]);
+    Object.entries(SIMC).forEach(([id, k]) => $(id).checked = !!S[k]);
+    $('sessLbl').textContent = '세션 g_certAuth=' + S.cert;
+    $('crumb').textContent = (S.menu === 'A_PAYROLL010307' ? '해외근무자' : '보상') + ' › 급여정보 › 연봉조정내역서(new)';
+  }
+  Object.entries(SIM).forEach(([id, k]) => $(id).onchange = e => { S[k] = e.target.value; S.cert = 'Y'; enter(); });
+  Object.entries(SIMC).forEach(([id, k]) => $(id).onchange = e => {
+    S[k] = e.target.checked; if (k === 'conf') S.confDt = S.conf ? (S.confDt || ymd(new Date(Date.now() - 3 * 864e5))) : '';
+    S.cert = 'Y'; enter();
+  });
+  $('btnCert').onclick = () => { S.cert = 'Y'; enter(); };
+  $('btnReopen').onclick = () => enter();
+
+  enter();
+
+  // ================= 화면 목록·전환 =================
+  const SCREENS = [['scrSheet', '연봉조정 내역서'], ['scrError', '오류 안내(개인인증 미통과)'], ['scrRestrict', '대상 아님 안내'], ['logArea', '처리 로그(목업 전용)'], ['simBar', '목업 전용 조건']];
+  const POPUPS = [];
+  const SHOW = {
+    simBar: () => '', logArea: () => '',
+    scrSheet: () => { if (S.screen === 'scrSheet') return ''; S.access = 'Y'; S.cert = 'Y'; enter(); return '샘플 조건(개인인증 통과·YN_ACCESS=Y)으로 내역서를 열었습니다.'; },
+    scrError: () => { if (S.screen === 'scrError') return ''; S.cert = 'N'; enter(); return '샘플 조건(개인인증 없이 g_certAuth=N)으로 오류 화면을 열었습니다.'; },
+    scrRestrict: () => { if (S.screen === 'scrRestrict') return ''; S.access = 'N'; S.cert = 'Y'; enter(); return '샘플 조건(YN_ACCESS=N)으로 대상 아님 안내를 열었습니다.'; }
+  };
+
+  // ================= 요구사항 초점·패널 =================
+  const isShown = el => el.getClientRects().length > 0 && el.offsetHeight > 0;
+  const oqText = s => esc(s).replace(/OQ-[A-Z0-9_]+-\d+/g, m => '<span class="oq" title="' + esc(m + ': ' + (OQS[m] || '')) + '">' + m + '</span>');
+  const regions = id => [...document.querySelectorAll('[data-req]')].flatMap(el => el.dataset.req.split(' ')
+    .map(t => t.split(':')).filter(([rid]) => rid === id).map(([, n]) => ({ el, acs: n ? n.split(',').map(Number) : [] })));
+  const scrOf = el => { const s = SCREENS.find(([sid]) => el.closest('#' + sid)); return s ? s[0] : null; };
+  const isCommon = el => !!el.closest('[data-common]');
+  const mainOf = id => { const scr = regions(id).filter(x => !isCommon(x.el)).map(x => scrOf(x.el)); const s = SCREENS.find(([sid]) => !POPUPS.includes(sid) && scr.includes(sid)); return s ? s[0] : null; };
+  function ensureScreen(id) {
+    const m = mainOf(id);
+    if (!m) return '';
+    if (isShown($(m)) && regions(id).some(x => isShown(x.el) && scrOf(x.el) === m)) return '';
+    return SHOW[m] ? (SHOW[m]() || '') : '';
+  }
+  function focusReq(id, fromEl) {
+    let note = '';
+    if (!fromEl) note = ensureScreen(id);
+    const shown = regions(id).filter(x => isShown(x.el));
+    const i = fromEl ? shown.findIndex(x => x.el.contains(fromEl)) : 0;
+    focus = { id, i: Math.max(0, i), note };
+    document.body.classList.add('rp-open');
+    applyFocus(true);
+    const item = document.querySelector('.rq.on'), rp = $('rpanel');
+    if (item) rp.scrollTo({ top: item.offsetTop - rp.querySelector('.rp-head').offsetHeight, behavior: 'smooth' });
+  }
+  function unfocus() { focus = null; applyFocus(false); }
+  function applyFocus(scroll) {
+    document.querySelectorAll('.rfocus').forEach(el => { el.classList.remove('rfocus', 'rcur'); delete el.dataset.flabel; });
+    if (!focus) { document.body.classList.remove('focusing'); renderPanel(); return; }
+    const shown = regions(focus.id).filter(x => isShown(x.el));
+    if (focus.i >= shown.length) focus.i = 0;
+    document.body.classList.toggle('focusing', shown.length > 0);
+    shown.forEach((x, i) => { x.el.classList.add('rfocus'); x.el.classList.toggle('rcur', i === focus.i); x.el.dataset.flabel = short(focus.id) + (x.acs.length ? ' #' + x.acs.join('·#') : ''); });
+    const cur = shown[focus.i];
+    if (scroll && cur) window.scrollTo({ top: Math.max(0, cur.el.getBoundingClientRect().top + window.scrollY - 90), behavior: 'smooth' });
+    renderPanel();
+  }
+  function refresh() { if (!ready) return; if (focus) applyFocus(false); else renderPanel(); }
+  function renderPanel() {
+    $('rpList').innerHTML = REQS.map(r => {
+      const all = regions(r.id), on = focus && focus.id === r.id;
+      const locs = SCREENS.filter(([sid]) => all.some(x => scrOf(x.el) === sid))
+        .map(([sid, name]) => '<span data-go="' + sid + '" title="이 화면으로 이동" class="' + (all.some(x => scrOf(x.el) === sid && isShown(x.el)) ? 'here' : '') + '">' + name + '</span>').join('');
+      let x = '';
+      if (on) {
+        const shown = all.filter(y => isShown(y.el));
+        const msg = focus.note || (shown.length ? '' : all.length ? '지금 화면에 없습니다 — 위 화면 위치를 누르세요.' : '화면 위치 없음');
+        x = '<div class="x"><div class="meta">' + esc(r.id) + ' · 행위자: ' + esc(r.actor) + ' · 우선순위: ' + esc(r.priority) + '</div>' +
+          (msg ? '<div class="away">' + esc(msg) + '</div>' : '') +
+          '<b>인수 조건</b><ol class="ac">' + r.acceptance_criteria.map((ac, i) => '<li><span class="mk">#' + (i + 1) + '</span><span>' + oqText(ac) + '</span></li>').join('') + '</ol>' +
+          '<div class="brs">관련 규칙: ' + (r.rules || []).map(b => '<span class="br" title="' + esc(BR_TITLES[b] || '') + '">' + b.replace(/^BR-[A-Z0-9_]+-/, 'BR-') + '</span>').join('') + '</div>' +
+          (r.notes ? '<div class="notes">참고: ' + oqText(r.notes) + '</div>' : '') + '</div>';
+      }
+      return '<div class="rq' + (on ? ' on' : '') + '" data-rq="' + r.id + '">' +
+        '<div class="h"><a class="rb">' + short(r.id) + '</a><b>' + esc(r.title) + '</b><span class="cnt">' + (on ? '▾' : '▸') + '</span></div>' +
+        '<div class="st">' + esc(r.statement) + '</div>' +
+        '<div class="loc">화면 위치: ' + (locs || '<span>화면 위치 없음</span>') + '</div>' + x + '</div>';
+    }).join('');
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.rb[data-rb]');
+    if (b) { e.preventDefault(); e.stopPropagation(); return focusReq(b.dataset.rb, b); }
+    if (document.body.classList.contains('focusing') && !e.target.closest('.rfocus, .rpanel, .topbar, .pop')) { e.preventDefault(); e.stopPropagation(); unfocus(); }
+  }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && focus) unfocus(); });
+  $('rpList').onclick = e => {
+    const rq = e.target.closest('[data-rq]'); if (!rq) return;
+    const id = rq.dataset.rq, go = e.target.closest('[data-go]');
+    if (go) {
+      const note = SHOW[go.dataset.go] ? (SHOW[go.dataset.go](true) || '') : '';
+      const shown = regions(id).filter(x => isShown(x.el));
+      focus = { id, i: Math.max(0, shown.findIndex(x => scrOf(x.el) === go.dataset.go)), note };
+      return applyFocus(true);
+    }
+    if (e.target.closest('.x')) return;
+    if (focus && focus.id === id) unfocus(); else focusReq(id, null);
+  };
+  $('rpToggle').onclick = () => { document.body.classList.toggle('rp-open'); renderPanel(); };
+  $('rpClose').onclick = () => { document.body.classList.remove('rp-open'); unfocus(); };
+  if (window.matchMedia('(min-width: 900px)').matches) document.body.classList.add('rp-open');
+  ready = true;
+  renderPanel();
+})();
+</script>
+<!-- mockup-view:start v1 -->
+<style>
+  /* ---- 개발정보 토글 (공통 블록, tools/analysis/mockup_view.py 로 넣음 — 손으로 고치지 않는다) ---- */
+  .mv-sw { display: inline-flex; margin: 0 auto; border: 1px solid rgba(255,255,255,.55); border-radius: 12px; overflow: hidden; font: bold 11px/20px Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; white-space: nowrap; }
+  .mv-sw button { border: none; border-radius: 0; background: transparent; color: var(--header-text, #fff); padding: 0 11px; font: inherit; cursor: pointer; opacity: .75; }
+  .mv-sw button[aria-pressed="true"] { background: var(--header-text, #fff); color: var(--header, #2f4f6f); opacity: 1; }
+  @media (max-width: 600px) { .mv-sw { order: 3; } }
+  .mv-cond { display: none; border: 1px dashed var(--line, #c4c4c4); padding: 4px 8px; margin: 0 0 8px; font-size: 11px; max-width: 980px; }
+  .mv-cond > .mv-h { color: var(--muted, #6b6b6b); font-weight: bold; margin-right: 6px; }
+  .mv-cond > :not(.mv-h) { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 2px 12px 2px 0; }
+  :root[data-mv="screen"] .mv-cond.on { display: block; }
+  :root[data-mv="screen"] :is(.note, .rpanel, #rpToggle, .rb, .oq, .fname, .hid-mark, #dbBox, .mock, .log, .plog, .runlog, [data-dev]) { display: none !important; }
+  :root[data-mv="screen"] body.focusing::before { display: none; }
+  :root[data-mv="screen"] .rfocus { outline: none; }
+  :root[data-mv="screen"] .rfocus::after { display: none; }
+</style>
+<script>
+/* 개발정보 토글: '화면만 보기' 면 노란 안내 상자·요구사항 패널·REQ 배지·OQ·필드명·숨김 필드·처리 로그를 숨긴다.
+   숨기는 상자 안의 목업 조건(사용자·서버 값 바꾸기)은 메뉴 경로 아래 '목업 조건' 줄로 옮겨 그대로 쓰게 하고, 돌아오면 제자리로.
+   상태는 localStorage 'mockup.view' (모든 목업 공통), 주소 ?view=screen|dev 가 우선. */
+(function () {
+  const root = document.documentElement, body = document.body;
+  const HIDE = '.note, .mock, .log, .plog, .runlog, #dbBox, [data-dev]';   // 요구사항 패널은 CSS 로만 숨김
+  const DEV_OPTS = ['optFname', 'optRefs', 'optHidden', 'optHid', 'optLog', 'optSrc'];
+  const KEEP_WRAP = '[data-mockctl], .mockctl, .sim, .opts, label, .key, dd, p';
+  const bar = document.querySelector('.topbar');
+  if (!bar || root.hasAttribute('data-mv')) return;
+
+  // 숨기는 상자 안의 목업 조건 컨트롤 → 옮길 묶음 (처음 읽을 때 한 번)
+  const conds = [];
+  document.querySelectorAll(HIDE).forEach(box => {
+    if (box.parentElement.closest(HIDE)) return;
+    box.querySelectorAll('input, select, textarea, button').forEach(c => {
+      if (DEV_OPTS.includes(c.id) || c.closest('.rb, [data-dev], ol, ul, table, #tblView, #dbBox') && !c.closest('[data-mockctl]')) return;
+      if (box.matches('.note') && c.disabled) return;   // 범례 견본
+      let w = c.closest(KEEP_WRAP);
+      if (!w || !box.contains(w) || w === box) w = c;
+      if (w.querySelector('#' + DEV_OPTS.join(', #'))) w = c;
+      if (!conds.some(x => x.contains(w))) {
+        for (let i = conds.length - 1; i >= 0; i--) if (w.contains(conds[i])) conds.splice(i, 1);
+        conds.push(w);
+      }
+    });
+  });
+  // 목업 조건 줄: 메뉴 경로 바로 아래
+  const strip = document.createElement('div');
+  strip.className = 'mv-cond';
+  strip.innerHTML = '<span class="mv-h" title="원본 화면에 없는 목업 전용 설정 (목업 설명)">목업 조건</span>';
+  const crumb = document.querySelector('.wrap .crumb') || document.querySelector('.crumb');
+  if (crumb) crumb.after(strip); else bar.after(strip);
+  const homes = new Map();
+
+  // 상단 바 가운데 스위치
+  const sw = document.createElement('span');
+  sw.className = 'mv-sw';
+  sw.innerHTML = '<button type="button" data-v="dev" title="노란 안내 상자·요구사항·REQ·OQ·처리 로그를 함께 봅니다">개발정보 보기</button>'
+    + '<button type="button" data-v="screen" title="기존 화면만 봅니다 (목업 조건은 남김)">화면만 보기</button>';
+  bar.insertBefore(sw, bar.lastElementChild);
+
+  let saved = null;
+  function set(v, store) {
+    if (v === root.getAttribute('data-mv')) return;
+    if (v === 'screen') {
+      if (body.classList.contains('focusing')) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      saved = { rp: body.classList.contains('rp-open'), opts: [] };
+      body.classList.remove('rp-open', 'focusing');
+      DEV_OPTS.forEach(id => { const o = document.getElementById(id); if (o && o.checked) { o.click(); saved.opts.push(id); } });
+      conds.forEach(w => { const mark = document.createComment('mv'); w.before(mark); homes.set(w, mark); strip.appendChild(w); });
+      strip.classList.toggle('on', conds.length > 0);
+    } else if (saved) {
+      conds.forEach(w => { const mark = homes.get(w); if (mark) { mark.replaceWith(w); homes.delete(w); } });
+      saved.opts.forEach(id => { const o = document.getElementById(id); if (o && !o.checked) o.click(); });
+      if (saved.rp) body.classList.add('rp-open');
+      saved = null;
+    }
+    root.setAttribute('data-mv', v);
+    sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+    if (store) try { localStorage.setItem('mockup.view', v); } catch (e) { /* 저장 못 해도 동작 */ }
+  }
+  sw.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) set(b.dataset.v, true); });
+
+  let start = 'dev';
+  try { start = localStorage.getItem('mockup.view') === 'screen' ? 'screen' : 'dev'; } catch (e) { /* 기본값 */ }
+  const q = new URLSearchParams(location.search).get('view');
+  if (q === 'screen' || q === 'dev') start = q;
+  root.setAttribute('data-mv', 'dev');
+  sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === 'dev')));
+  if (start === 'screen') set('screen', false);
+})();
+</script>
+<!-- mockup-view:end -->
+</body>
+</html>
