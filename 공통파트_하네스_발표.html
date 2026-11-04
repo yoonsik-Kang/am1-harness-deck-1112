@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AX 시대, 공통파트의 역할</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* ===== 테마: 기본은 검정 배경 + 흰색/노란색. T 키로 PM 샘플 톤(밝은 배경·블루)과 전환 ===== */
+:root{
+  --bg:#000; --ink:#fff; --mute:#d0d0d0; --accent:#FFD400; --on-accent:#000;
+  --card:#161616; --card-2:#0d0d0d; --line:#3d3d3d; --ph:#222;
+  --f-display:"Gothic A1","IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  --f-body:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+}
+:root[data-theme="light"]{
+  --bg:#F4F6F9; --ink:#0D1F33; --mute:#4A5B70; --accent:#0A4F8F; --on-accent:#fff;
+  --card:#fff; --card-2:#E9EEF4; --line:#D3DBE5; --ph:#E9EEF4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+body{font-family:var(--f-body);color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
+:root[data-theme="light"] body,:root[data-theme="light"] html{background:#cfd6df}
+
+/* ===== 스테이지: 1920x1080 고정 좌표를 화면에 맞춰 축소 ===== */
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{width:1920px;height:1080px;position:relative;background:var(--bg);transform-origin:center center;flex:none;overflow:hidden}
+.slide{position:absolute;inset:0;padding:84px 120px 96px;display:none;flex-direction:column}
+.slide.on{display:flex}
+h1,h2,h3,p,ul{margin:0}
+ul{padding:0;list-style:none}
+h2{font-family:var(--f-display);font-weight:900;font-size:68px;line-height:1.15;color:var(--accent);letter-spacing:-.02em}
+.sub{font-size:32px;color:var(--mute);margin-top:12px}
+.head{margin-bottom:44px;flex:none}
+.body{flex:1;min-height:0;display:flex;flex-direction:column;gap:28px}
+.row{display:flex;gap:28px}
+.row>*{flex:1;min-width:0}
+.grow{flex:1;min-height:0}
+.pnum{position:absolute;right:56px;bottom:36px;font-size:24px;color:var(--mute)}
+.tag{position:absolute;left:120px;bottom:36px;font-size:22px;color:var(--mute);letter-spacing:.04em}
+
+/* 카드 */
+.card{background:var(--card);border:2px solid var(--accent);border-radius:22px;padding:34px 38px;display:flex;flex-direction:column;justify-content:center}
+.card.fill{background:var(--accent);color:var(--on-accent)}
+.card.plain{border-color:var(--line)}
+.card h3{font-family:var(--f-display);font-weight:800;font-size:40px;line-height:1.25;color:var(--accent)}
+.card.fill h3{color:var(--on-accent)}
+.card p,.card li{font-size:30px;line-height:1.5;margin-top:10px}
+.card .mini{font-size:26px;color:var(--mute)}
+.card.fill .mini{color:var(--on-accent);opacity:.85}
+.card ul.dot li{position:relative;padding-left:30px;margin-top:12px}
+.card ul.dot li::before{content:"";position:absolute;left:2px;top:.62em;width:11px;height:11px;border-radius:50%;background:currentColor;opacity:.9}
+.big{font-family:var(--f-display);font-weight:900;font-size:56px;line-height:1.2}
+.y{color:var(--accent)}
+.stat{font-family:var(--f-display);font-weight:900;font-size:104px;line-height:1;color:var(--accent)}
+.stat small{font-size:40px;font-weight:700;margin-left:6px;color:var(--ink)}
+.num{width:76px;height:76px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-family:var(--f-display);font-weight:900;font-size:40px;display:flex;align-items:center;justify-content:center;flex:none}
+.arrow{flex:none!important;width:64px;display:flex;align-items:center;justify-content:center;font-size:54px;color:var(--ink)}
+
+/* 표 */
+table{border-collapse:collapse;width:100%;font-size:30px}
+th,td{padding:20px 26px;text-align:left;border:1px solid var(--line);line-height:1.4}
+th{background:var(--accent);color:var(--on-accent);font-weight:800}
+td:first-child{color:var(--accent);font-weight:800;white-space:nowrap}
+tbody tr:nth-child(odd){background:var(--card-2)}
+tbody tr:nth-child(even){background:var(--card)}
+td.dim{color:var(--mute)}
+
+/* 미디어 슬롯 (이미지/동영상) */
+.media{position:relative;border:3px dashed var(--accent);border-radius:20px;background:var(--ph);overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center}
+.media.loaded{border:2px solid var(--line);background:#000}
+.media img,.media video{width:100%;height:100%;object-fit:contain;display:block}
+.media .ph{padding:24px;font-size:28px;color:var(--mute);line-height:1.5}
+.media .ph b{display:block;color:var(--accent);font-size:34px;margin-bottom:8px}
+.media .ph code{font-family:Consolas,monospace;font-size:26px;color:var(--ink)}
+.media.loaded .ph{display:none}
+
+/* 흐름도 */
+.flow{display:flex;align-items:stretch;gap:0}
+.flow .step{flex:1;background:var(--card);border:2px solid var(--accent);border-radius:20px;padding:26px 22px;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.flow .step.hl{background:var(--accent);color:var(--on-accent)}
+.flow .step b{font-family:var(--f-display);font-weight:900;font-size:36px;color:var(--accent);line-height:1.25}
+.flow .step.hl b{color:var(--on-accent)}
+.flow .step span{font-size:25px;margin-top:8px;line-height:1.4}
+
+/* 표지 */
+.cover{justify-content:center}
+.cover .kicker{font-size:30px;color:var(--mute);margin-bottom:26px}
+.cover h1{font-family:var(--f-display);font-weight:900;font-size:124px;line-height:1.12;color:var(--accent);letter-spacing:-.03em}
+.cover .h2{font-family:var(--f-display);font-weight:800;font-size:56px;margin-top:36px}
+.cover .who{position:absolute;left:120px;bottom:84px;font-size:28px;color:var(--mute)}
+
+/* 하단 UI */
+#bar{position:fixed;left:0;right:0;bottom:0;height:5px;background:transparent;z-index:20}
+#bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+#hud{position:fixed;right:14px;top:12px;z-index:30;display:flex;gap:8px;opacity:0;transition:opacity .25s}
+body.hud #hud,#hud:hover{opacity:1}
+#hud button{font:600 14px var(--f-body);background:rgba(30,30,30,.85);color:#fff;border:1px solid #666;border-radius:8px;padding:7px 12px;cursor:pointer}
+#hud button:hover{background:#FFD400;color:#000}
+#hint{position:fixed;left:14px;bottom:12px;z-index:30;font:500 13px var(--f-body);color:#888;opacity:0;transition:opacity .25s}
+body.hud #hint{opacity:1}
+#notes{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#111;color:#fff;border-top:3px solid #FFD400;padding:16px 28px;font-size:20px;line-height:1.6;display:none;max-height:32vh;overflow:auto}
+body.shownotes #notes{display:block}
+#toc{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.94);display:none;overflow:auto;padding:40px}
+body.toc #toc{display:block}
+#toc h4{margin:0 0 20px;font:800 26px var(--f-display);color:#FFD400}
+#toc .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+#toc button{text-align:left;background:#161616;color:#fff;border:1px solid #444;border-radius:12px;padding:14px 16px;font:600 17px var(--f-body);cursor:pointer;line-height:1.4}
+#toc button:hover,#toc button.cur{border-color:#FFD400;background:#262200}
+#toc button em{display:block;font-style:normal;color:#FFD400;font-size:14px;margin-bottom:4px}
+
+
+/* 7 Agent 격자 */
+.agrid{display:grid;grid-template-columns:190px repeat(5,1fr);gap:12px;align-items:stretch}
+.agrid .lane{font-weight:800;font-size:26px;line-height:1.3;color:var(--accent);display:flex;align-items:center}
+.agrid .sh{background:var(--accent);color:var(--on-accent);font-weight:900;font-size:28px;text-align:center;padding:12px 6px;border-radius:14px}
+.agrid .cell{display:flex;flex-direction:column;gap:10px;justify-content:center}
+.agrid .dn{text-align:center;font-size:34px;line-height:1;color:var(--ink)}
+.abox{border-radius:16px;padding:12px 12px;text-align:center;font-size:23px;line-height:1.3}
+.abox b{display:block;font-size:26px;line-height:1.25}
+.abox.tool{background:var(--accent);color:var(--on-accent)}
+.abox.ag{background:var(--card);border:2px solid var(--accent)}
+.abox.ag b{color:var(--accent)}
+.abox.empty{border:2px dashed var(--line);color:var(--mute);background:transparent;padding:30px 12px}
+#timer{position:fixed;left:14px;top:12px;z-index:35;font:700 20px Consolas,monospace;background:rgba(0,0,0,.8);color:#FFD400;border:1px solid #666;border-radius:8px;padding:6px 12px;display:none}
+body.timer #timer{display:block}
+#timer.over{color:#ff6b6b}
+
+/* 코드분석기 샘플: 눌러 전체 화면으로 보고, Esc 로 이 장에 복귀 */
+.launch{flex:1;min-height:0;background:var(--card);border:2px solid var(--accent);border-radius:18px;color:var(--ink);text-align:left;padding:16px 22px;cursor:pointer;font:inherit;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.launch b{font-family:var(--f-display);font-weight:800;font-size:32px;color:var(--accent);line-height:1.25}
+.launch span{font-size:22px;color:var(--mute);line-height:1.35}
+.launch:hover,.launch:focus{background:var(--accent);color:var(--on-accent);outline:none}
+.launch:hover b,.launch:hover span,.launch:focus b,.launch:focus span{color:var(--on-accent)}
+#sampleView{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;background:#111}
+#sampleView.on{display:flex}
+#sampleBar{flex:none;min-height:64px;display:flex;align-items:center;gap:14px;padding:10px 18px;background:#000;border-bottom:3px solid #FFD400;color:#fff;font:600 18px var(--f-body)}
+#sampleBar button{font:700 16px var(--f-body);background:#222;color:#fff;border:1px solid #555;border-radius:10px;padding:10px 14px;cursor:pointer}
+#sampleBack{background:#FFD400!important;color:#000!important;border-color:#FFD400!important}
+#sampleTabs{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+#sampleTabs button.on{background:#FFD400;color:#000;border-color:#FFD400}
+#sampleFrame{flex:1;width:100%;border:0;background:#fff}
+
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  #viewport{position:static;display:block}
+  #stage{transform:none!important;width:1920px;height:auto;overflow:visible}
+  .slide{position:relative;display:flex!important;height:1080px;page-break-after:always;break-after:page}
+  #hud,#hint,#bar,#notes,#toc,#sampleView{display:none!important}
+  @page{size:1920px 1080px;margin:0}
+}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<section class="slide cover" data-title="표지" data-notes="[0:40] 안녕하세요. 오늘은 두 층을 나눠 말씀드리겠습니다. 먼저 AX 시대에 공통파트의 역할이 바뀐다는 대전제입니다. 그다음, 그 전제를 우리 프로젝트에서 코드분석기, 목업스튜디오, 개발자 워크벤치로 어떻게 구현하는가입니다. 난독 소스는 이 대전제의 이유가 아니라, 우리 프로젝트가 넘는 허들 중 하나입니다.">
+  <div class="kicker">AX 시대, 공통파트 역할의 대전제 · Global One HR에서의 구현</div>
+  <h1>공통파트는<br>샘플코드를<br>만들지 않습니다.</h1>
+  <div class="h2">규격에 맞게 바이브코딩하는 하네스를 만듭니다</div>
+  <div class="who">CJ올리브네트웍스 AM1팀 강윤식<br>2026년 11월 12일</div>
+</section>
+
+<section class="slide" data-title="대전제: 역할 변화" data-notes="[1:10] AX 시대의 대전제부터 말씀드리겠습니다. 공통파트가 만들던 것의 중심이 샘플코드에서 하네스로 이동합니다. 샘플코드는 사람이 보고 따라 짜게 하던 방식입니다. AI가 코드를 짜는 지금은 규칙과 컨텍스트와 가드레일이 품질을 만듭니다. 지원 대상도 개발자만이 아니라, 초기 설계를 하는 PL과 AI까지입니다. 이 변화는 우리 소스가 난독이라서가 아닙니다. 패러다임이 바뀐 것입니다.">
+  <div class="head"><h2>AX 시대, 공통파트의 역할이 바뀝니다</h2><div class="sub">일을 그만두는 것이 아니라, 만드는 것이 바뀝니다</div></div>
+  <div class="body"><table>
+    <thead><tr><th></th><th>기존 공통파트</th><th>AX 시대 공통파트</th></tr></thead>
+    <tbody>
+      <tr><td>핵심 산출물</td><td>프레임워크, 샘플화면, 샘플코드</td><td>하네스 + 참고용 기존소스 분석본</td></tr>
+      <tr><td>품질 확보</td><td>샘플을 보고 따라 짜게 함</td><td>규격 안에서 바이브코딩이 되게 함</td></tr>
+      <tr><td>관리 대상</td><td>공통함수, 시스템관리 페이지</td><td>공통함수 + 규칙 + 명세 포맷</td></tr>
+      <tr><td>지원 시점</td><td>개발 착수 이후</td><td>초기 설계부터 개발까지</td></tr>
+      <tr><td>지원 대상</td><td>개발자</td><td>초기 설계 PL, 개발자, AI</td></tr>
+    </tbody></table></div>
+</section>
+
+<section class="slide" data-title="패러다임: 샘플코드에서 하네스로" data-notes="[1:00] 그래서 질문이 하나 남습니다. AI가 코드를 짜는 시대에 샘플코드를 계속 만들어야 하는가. 샘플코드가 틀린 게 아니라, 가르치는 대상이 달라진 것입니다. 사람에게는 샘플이 통했습니다. AI에게는 규격이 필요합니다. 소스가 난독인지와는 별개의 이야기입니다.">
+  <div class="head"><h2>샘플코드는 사람을 가르쳤습니다</h2><div class="sub">AI에게 필요한 것은 샘플이 아니라 규격입니다</div></div>
+  <div class="body" style="flex-direction:row;gap:28px">
+    <div class="card" style="flex:1.05;justify-content:flex-start">
+      <h3>바이브코딩의 편차</h3>
+      <p>사람마다 프롬프트가 다르면, 같은 화면도 코드가 달라집니다.</p>
+      <figure class="media grow" style="margin-top:22px" data-src="media/04-quality-gap.png" data-label="같은 화면, 두 가지 AI 결과"></figure>
+    </div>
+    <div class="card fill" style="flex:.95;justify-content:center">
+      <h3>공통파트가 만들 것</h3>
+      <ul class="dot">
+        <li>디자인 규칙</li>
+        <li>명세 포맷</li>
+        <li>구현 기준</li>
+      </ul>
+      <p style="margin-top:28px"><b>이 세 가지가 하네스입니다.</b><br>전통적인 샘플코드 꾸러미가 아닙니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="우리 프로젝트의 사이클" data-notes="[1:00] 이 대전제를 Global One HR에서는 세 단계로 돌립니다. 코드분석기, 목업스튜디오, 개발자 워크벤치입니다. 초기 설계를 하는 PL과 개발자를 지원합니다. 한 바퀴 돌면 샘플코드 대신 두 가지가 남습니다. 규격에 맞게 바이브코딩할 수 있는 하네스, 그리고 참고할 기존소스 분석본입니다. 이제 각 단계를 화면과 함께 보겠습니다.">
+  <div class="head"><h2>우리 프로젝트는 이 전제를 사이클로 돌립니다</h2><div class="sub">초기 설계하는 PL과 개발자를, 세 단계로 지원합니다</div></div>
+  <div class="body">
+    <div class="flow" style="flex:none">
+      <div class="step"><b>1. 코드분석기</b><span>기존 소스를<br>분석본으로</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>2. 목업스튜디오</b><span>PL의 초기 설계<br>목업 · 화면설계</span></div>
+      <div class="arrow">→</div>
+      <div class="step hl"><b>3. 개발자 워크벤치</b><span>개발 시점의<br>규격과 기준</span></div>
+    </div>
+    <div class="card fill grow" style="justify-content:center">
+      <p class="big" style="font-size:46px;margin:0">산출물은 샘플코드가 아닙니다.<br><u>하네스</u>와, 참고할 <u>기존소스 분석본</u>입니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="코드분석기" data-notes="[1:30] 코드분석기입니다. 기존 소스의 화면, 로직, 데이터를 읽어 HTML 분석본으로 정리합니다. PL과 개발자, AI가 같이 참고하는 문서가 됩니다. 우리 프로젝트의 허들을 여기서 말씀드리겠습니다. 화면 정의가 XML 하나에 들어 있고 6.92GB라 에디터로 열리지 않습니다. 열어도 주석 없는 PeopleCode입니다. 난독은 AX 전환의 이유가 아니라, 이 프로젝트가 넘는 허들 중 하나이고, 코드분석기가 그 허들을 분석본으로 바꿉니다. 오른쪽 샘플 셋을 눌러 실제 분석본을 보여 주세요. 샘플 안에서는 좌우로 화면을 바꾸고, Esc 또는 발표로 돌아가기로 이 장에 옵니다.">
+  <div class="head"><h2>코드분석기</h2><div class="sub">난독 AS-IS는 대전제가 아니라, 이 프로젝트의 허들 중 하나입니다</div></div>
+  <div class="body" style="flex-direction:row;gap:28px">
+    <div style="flex:1.05;display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div class="card" style="flex:none"><h3>하는 일</h3><ul class="dot"><li>화면 · 로직 · 데이터를 HTML 분석본으로 정리</li><li>PL, 개발자, AI가 같이 참고</li><li>뒤 단계의 입력. 샘플코드를 대신하지 않고, 근거를 만듦</li></ul></div>
+      <div class="row grow">
+        <figure class="media" style="margin:0" data-src="media/00-opening-peoplecode.png" data-label="주석 없는 PeopleCode"></figure>
+        <figure class="media" style="margin:0" data-src="media/00-opening-filetoolarge.png" data-label="6.92GB, 열리지 않는 XML"></figure>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:14px;min-width:0">
+      <button type="button" class="launch" data-sample="0"><b>통합결재함</b><span>PERSON1604 · 클릭하면 분석본. Esc 로 복귀</span></button>
+      <button type="button" class="launch" data-sample="1"><b>연차 현황관리</b><span>ZTA_C0130 · 클릭하면 분석본. Esc 로 복귀</span></button>
+      <button type="button" class="launch" data-sample="2"><b>연봉조정내역서</b><span>PAYROLL010307 · 클릭하면 분석본. Esc 로 복귀</span></button>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="목업스튜디오" data-notes="[1:15] 목업스튜디오입니다. 분석본과 요구를 받아 목업을 만들고 화면설계서 초안을 씁니다. 초기 설계를 하는 PL을 지원하는 단계입니다. PL은 빈 양식부터 쓰는 작성자에서, 초안을 보고 고치는 검수자가 됩니다. 디자인 규칙을 고정해 두므로, 사람마다 다른 화면이 아니라 규격 안의 설계가 됩니다. (예시 화면)">
+  <div class="head"><h2>목업스튜디오</h2><div class="sub">분석본으로, 초기 설계하는 PL을 지원합니다</div></div>
+  <div class="body" style="flex-direction:row;gap:36px">
+    <div style="flex:.85;display:flex;flex-direction:column;gap:20px">
+      <div class="card grow"><h3>하는 일</h3><ul class="dot"><li>요구와 분석본으로 목업 HTML 생성</li><li>화면설계서 초안 작성. PL은 검수와 의사결정</li><li>디자인 규칙을 고정해 규격 안에서 설계</li><li>사람용 설계서와, AI가 읽을 명세를 같이 남김</li></ul></div>
+      <div class="card fill" style="flex:none"><p style="margin:0"><b>작성자에서 검수자로</b></p></div>
+    </div>
+    <figure class="media" style="flex:1.15;margin:0" data-src="media/02-mockup-studio.mp4" data-label="목업스튜디오 예시 화면"></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="개발자 워크벤치" data-notes="[1:15] 개발자 워크벤치입니다. 개발 시점에 분석본을 옆에 두고, 기능이 빠지지 않았는지 확인합니다. 여기서 샘플코드를 다시 배포하지 않습니다. 디자인 규칙, 명세, 구현 기준을 컨텍스트로 주어, 규격에 맞는 바이브코딩이 일어나게 합니다. 개발자가 참고하는 것은 기존소스 분석본입니다. (예시 화면)">
+  <div class="head"><h2>개발자 워크벤치</h2><div class="sub">분석본을 옆에 두고, 규격 안에서 개발합니다</div></div>
+  <div class="body" style="flex-direction:row;gap:36px">
+    <div style="flex:.85;display:flex;flex-direction:column;gap:20px">
+      <div class="card grow"><h3>하는 일</h3><ul class="dot"><li>화면별 기존소스 분석본을 개발 시점에 확인</li><li>기능 누락 체크</li><li>디자인 규칙 · 명세 · 구현 기준을 컨텍스트로 제공</li><li>샘플코드 대신, 규격에 맞는 바이브코딩이 되게 함</li></ul></div>
+      <div class="card fill" style="flex:none"><p style="margin:0"><b>참고본은 분석본, 품질은 하네스</b></p></div>
+    </div>
+    <figure class="media" style="flex:1.15;margin:0" data-src="media/03-dev-workbench.mp4" data-label="개발자 워크벤치 예시 화면"></figure>
+  </div>
+</section>
+
+<section class="slide" data-title="사이클의 산출" data-notes="[0:50] 세 단계를 이어서 보면 공통파트가 주던 샘플코드는 이 사이클의 산출물이 아닙니다. PL은 설계 초안을 검수하고, 개발자는 분석본으로 누락 없이 구현하고, AI는 하네스 안에서 코딩합니다. 남는 것은 규격에 맞게 바이브코딩할 수 있는 하네스와, 참고할 기존소스 분석본입니다.">
+  <div class="head"><h2>사이클을 돌리면, 샘플코드는 필요 없습니다</h2><div class="sub">남는 것은 하네스와 기존소스 분석본입니다</div></div>
+  <div class="body"><table>
+    <thead><tr><th></th><th>코드분석기</th><th>목업스튜디오</th><th>개발자 워크벤치</th></tr></thead>
+    <tbody>
+      <tr><td>PL</td><td>요구의 근거</td><td><b>설계 초안을 검수</b></td><td>누락 점검의 근거</td></tr>
+      <tr><td>개발자</td><td>읽는 시간을 줄임</td><td>화면 구조를 먼저 봄</td><td><b>누락 없이 구현</b></td></tr>
+      <tr><td>AI</td><td>분석본을 컨텍스트로</td><td>디자인 규칙을 참조</td><td><b>하네스 안에서 코딩</b></td></tr>
+    </tbody></table>
+    <div class="card fill" style="flex:none;padding:24px 40px"><p class="big" style="font-size:40px;margin:0">전통적인 샘플코드 지원은 여기서 끝납니다.</p></div></div>
+</section>
+
+<section class="slide" data-title="별개: 현장 에이전트" data-notes="[1:00] 앞의 세 단계와는 별개입니다. 지금 프로젝트에서는 필요할 때마다 에이전트를 만들어 바로 쓰고 있습니다. DB 마이그레이션 전용 에이전트, AS-IS와 TO-BE를 병행 운영하기 위한 EAI 에이전트, 업무회의 회의록을 써 주는 Meeting Note가 그 예입니다. 공통파트 역할 변화의 대전제가 아니라, 현장 운영의 축입니다.">
+  <div class="head"><h2>이와 별개로, 현장 에이전트를 수시로 만듭니다</h2><div class="sub">역할 변화의 사이클과는 다른 축입니다</div></div>
+  <div class="body">
+    <div class="row grow">
+      <div class="card"><h3>DB 마이그레이션</h3><p>이관 작업 전용 에이전트</p></div>
+      <div class="card"><h3>EAI 에이전트</h3><p>AS-IS와 TO-BE<br>병행 운영</p></div>
+      <div class="card"><h3>Meeting Note</h3><p>업무회의 회의록 작성</p></div>
+    </div>
+    <div class="card fill" style="flex:none;padding:28px 40px"><p style="margin:0;font-size:34px">프로젝트에서 필요하면 만들어 바로 씁니다. 앞의 3단계와 섞지 않습니다.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="앞으로의 SI" data-notes="[1:00] 앞으로의 SI는 이전과 많이 다를 것이고, 우리 프로젝트가 그 시발점 중 하나라고 봅니다. AI 활용이 아직 낯선 PL에게는 활용 가이드를 하고 있습니다. AI를 적극적으로 쓰지 못하는 외주 업체는 프로젝트에서 제외하기도 합니다. 딜리버리혁신담당에서 진행하는 SI는 이 AI DLC 사이클로 바뀌게 됩니다.">
+  <div class="head"><h2>앞으로의 SI는 이전과 다를 것입니다</h2><div class="sub">우리 프로젝트가 그 시발점 중 하나입니다</div></div>
+  <div class="body" style="gap:22px">
+    <div class="card" style="flex-direction:row;align-items:center;gap:28px;padding:28px 40px"><div class="num">1</div><div><div class="big" style="font-size:40px">PL에게 활용 가이드를 합니다</div><p class="mini" style="margin-top:8px">AI가 아직 낯선 설계 리더가 도구를 쓰게 합니다</p></div></div>
+    <div class="card" style="flex-direction:row;align-items:center;gap:28px;padding:28px 40px"><div class="num">2</div><div><div class="big" style="font-size:40px">쓰지 않는 외주는 프로젝트에서 제외합니다</div><p class="mini" style="margin-top:8px">AI를 적극적으로 활용하지 못하면 수행에서 빠집니다</p></div></div>
+    <div class="card fill" style="flex-direction:row;align-items:center;gap:28px;padding:28px 40px"><div class="num">3</div><div><div class="big" style="font-size:40px">담당 SI는 AI DLC 사이클로 바뀝니다</div><p class="mini" style="margin-top:8px">딜리버리혁신담당이 진행하는 프로젝트가 이 방식으로 갑니다</p></div></div>
+  </div>
+</section>
+
+<section class="slide" data-title="AM1팀의 가교" data-notes="[1:00] 여기서 솔직하게 말씀드리겠습니다. PM님들은 AI를 정말 잘 쓰십니다. 초안 단계는 훌륭합니다. 다만 그 초안이 프로젝트에서 유의미하게 쓰이려면, 세세한 개선과 지속적인 관리 보강이 필수입니다. 딜리버리혁신담당의 SI가 AI DLC로 갈 때, 그 가교와 실제 구현은 AM1팀이 책임집니다.">
+  <div class="head"><h2>그 중심에서 AM1팀은 가교가 됩니다</h2><div class="sub">초안을 현장에서 쓰이게 만드는 일</div></div>
+  <div class="body" style="flex-direction:row;gap:28px">
+    <div class="card" style="justify-content:center"><h3>PM의 AI 초안</h3><p class="big" style="font-size:44px;margin-top:18px">방향과 초안은<br>이미 훌륭합니다.</p></div>
+    <div class="card fill" style="justify-content:center"><h3>프로젝트에서 쓰이려면</h3><p style="margin-top:16px"><b>세세한 개선과 지속적인 보강이 필수입니다.</b></p><p style="margin-top:18px">AM1팀은 가교이자, 실제 구현을 책임집니다.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="7개 AI DLC와 3단계" data-notes="[1:20] 우리 담당에는 이미 7개 AI DLC 에이전트가 구현되어 있습니다. 분석설계의 Spec, 개발의 Diff Review와 Full Scan Review, 테스트의 Test, 오픈 전의 Quality와 Security, 운영의 Wiki입니다. 우리가 만든 코드분석기, 목업스튜디오, 개발자 워크벤치 3단계가 이 7개와 유기적으로 동작하면, 초안을 넘어 프로젝트 안에서 돌아가는 AI DLC가 시작된다고 봅니다.">
+  <div class="head" style="margin-bottom:28px"><h2>담당의 7개와, 우리가 만든 3단계</h2><div class="sub">이미 있는 AI DLC와 맞물릴 때 시작됩니다</div></div>
+  <div class="body" style="gap:18px">
+    <div class="agrid">
+      <div></div>
+      <div class="sh">분석 / 설계</div><div class="sh">코드 개발</div><div class="sh">테스트</div><div class="sh">오픈 전</div><div class="sh">운영</div>
+
+      <div class="lane">우리의<br>3단계</div>
+      <div class="cell"><div class="abox tool"><b>코드분석기</b>기존소스 분석본</div><div class="abox tool"><b>목업스튜디오</b>초기 설계</div></div>
+      <div class="cell"><div class="abox tool"><b>개발자 워크벤치</b>규격 안 구현</div></div>
+      <div class="cell"><div class="abox tool"><b>개발자 워크벤치</b>테스트 목록</div></div>
+      <div class="cell"><div class="abox empty">—</div></div>
+      <div class="cell"><div class="abox empty">—</div></div>
+
+      <div></div>
+      <div class="dn">▼</div><div class="dn">▼</div><div class="dn">▼</div><div class="dn"></div><div class="dn"></div>
+
+      <div class="lane">담당 7개<br>AI DLC</div>
+      <div class="cell"><div class="abox ag"><b>Spec Agent</b>설계 산출물 구조화</div></div>
+      <div class="cell"><div class="abox ag"><b>Diff Review Agent</b>변경 소스 코드리뷰</div><div class="abox ag"><b>Full Scan Review Agent</b>전체 소스 코드리뷰</div></div>
+      <div class="cell"><div class="abox ag"><b>Test Agent</b>테스트 코드 자동 생성</div></div>
+      <div class="cell"><div class="abox ag"><b>Quality Agent</b>오픈 전 품질 점검</div><div class="abox ag"><b>Security Agent</b>오픈 전 보안 점검</div></div>
+      <div class="cell"><div class="abox ag"><b>Wiki Agent</b>지식 자산화</div></div>
+    </div>
+    <div class="card fill" style="flex:none;padding:18px 36px"><p style="margin:0;font-size:32px">3단계와 7개가 유기적으로 동작하면, <b>진정한 AI DLC의 시작</b>입니다.</p></div>
+  </div>
+</section>
+
+<section class="slide cover" data-title="마무리 · Q&A" data-notes="[0:40] 정리하겠습니다. AX 시대에 공통파트는 샘플코드 대신 하네스를 만듭니다. 우리 프로젝트는 그 사이클을 코드분석기, 목업스튜디오, 개발자 워크벤치로 돌리고 있고, 난독 소스는 그 안의 허들 중 하나입니다. 현장 에이전트는 그와 별개로 계속 만듭니다. 이 프로젝트가 시발점이고, AM1이 가교와 구현을 책임집니다. 7개와 3단계가 맞물리면 AI DLC가 시작됩니다. 감사합니다.">
+  <h1 style="font-size:78px;color:var(--ink)">역할은 샘플코드에서<br><span style="color:var(--accent)">하네스로 바뀌었습니다.</span></h1>
+  <div class="h2" style="font-weight:600;font-size:40px">3단계와 담당의 7개가 맞물릴 때, AI DLC가 시작됩니다.</div>
+  <div class="h2" style="color:var(--accent)">Q &amp; A</div>
+</section>
+
+<section class="slide cover" data-appendix="1" data-title="부록" data-notes="부록입니다. 질문이 나오면 해당 슬라이드로 이동하세요. O 키로 목차를 열 수 있습니다.">
+  <h1 style="color:var(--ink)">부록</h1>
+  <div class="h2" style="font-weight:600;font-size:40px">도구별 상세 · 구성원별 상세 · 기존 공통파트 · 프로젝트 소개 상세</div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 프로젝트 소개" data-notes="[0:45] 먼저 저희 프로젝트부터 짚겠습니다. Global One HR은 &#x27;26년 9월부터 19개월간 22개 법인에 그룹 HR 시스템을 구축하는 프로젝트입니다. SuccessFactors 표준을 기본으로 하고, 급여·근태 같은 국내 특수 영역만 SI 개발과 3rd Party로 보완합니다. 그런데 이 국내 영역을 개발하려면 기존 GHR 소스를 읽어야 합니다. 소스를 읽는 일은 허들이지, 오늘 대전제는 아닙니다.">
+  <div class="head"><h2>Global One HR 프로젝트</h2><div class="sub">글로벌 확장과 AI 기반 일하는 방식을 뒷받침할 차세대 그룹 HR 시스템 구축</div></div>
+  <div class="body">
+    <div class="row" style="flex:none">
+      <div class="card"><div class="stat">19<small>개월</small></div><p class="mini">Wave 1 구축 기간<br>'26.09 ~ '28.03</p></div>
+      <div class="card"><div class="stat">22<small>개 법인</small></div><p class="mini">Wave 1 적용 대상<br>국내 18 · 해외 4</p></div>
+      <div class="card"><div class="stat">42<small>명</small></div><p class="mini">착수 시점 수행 조직<br>HR 12 · IT 30</p></div>
+      <div class="card fill"><div class="stat" style="color:var(--on-accent);font-size:84px;white-space:nowrap">'28.03</div><p class="mini">Wave 1 Grand Open</p></div>
+    </div>
+    <div class="row grow">
+      <div class="card"><h3>구축 범위</h3><ul class="dot"><li>SuccessFactors 표준 기반 구축</li><li>급여 · 근태 등 <b>국내 특수 영역</b>은 SI 개발과 3rd Party로 보완</li></ul></div>
+      <div class="card fill"><h3>우리가 마주할 일</h3><p style="margin-top:14px"><b>국내 특수 영역을 개발하려면 기존 GHR(AS-IS) 소스를 읽고 이해해야 합니다</b></p></div>
+    </div>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 기존 프로세스와 새 도구의 충돌" data-notes="[0:30] 그렇다고 도구만 얹으면 되는 건 아닙니다. 고객 승인 양식, 단계별 승인, AI 산출물의 검수 책임, 회사망 보안과 부딪힙니다. 그래서 도구를 얹기보다 프로세스에 끼워 넣을 자리를 찾아야 했습니다.">
+  <div class="head"><h2>기존 프로세스와 새 도구의 충돌</h2><div class="sub">도구를 얹는 게 아니라, 프로세스에 끼워 넣을 자리를 찾아야 합니다</div></div>
+  <div class="body"><table>
+    <thead><tr><th>충돌 지점</th><th>기존 프로세스</th><th>AI 도구</th></tr></thead>
+    <tbody>
+      <tr><td>산출물 양식</td><td>고객 승인 양식 (PPT, XLSX)</td><td>자유로운 텍스트, HTML 출력</td></tr>
+      <tr><td>진행 방식</td><td>단계별 승인 구조</td><td>빠른 반복 실행</td></tr>
+      <tr><td>책임</td><td>작성자가 책임</td><td>AI가 쓴 산출물은 누가 검수?</td></tr>
+      <tr><td>보안</td><td>회사망, 프록시</td><td>외부 API Key, SSL 이슈</td></tr>
+    </tbody></table></div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 내 프로젝트에 가져간다면" data-notes="[0:45] 여러분 프로젝트에 가져가신다면 세 가지만 보셔도 됩니다. 첫째, 공통파트가 만든 것 중 AI가 읽을 수 있는 규칙과 명세가 무엇인지 점검하세요. 둘째, 가장 난독인 AS-IS 하나로 시작해서 해독 결과를 구조화해 남기세요. 셋째, 개발 앞단, 분석·설계·테스트 목록에 입력을 만드세요. 그리고 각자 프로젝트에서 해 보신 것, 막힌 것을 나눠 주세요. 규칙과 프롬프트를 같이 쌓으면 하네스가 훨씬 빨리 자랍니다.">
+  <div class="head" style="margin-bottom:30px"><h2>내 프로젝트에 가져간다면</h2><div class="sub">도구는 달라도 순서는 같습니다</div></div>
+  <div class="body" style="gap:22px">
+    <div class="card" style="flex-direction:row;align-items:center;justify-content:flex-start;gap:32px;padding:24px 40px"><div class="num">1</div><div><div class="big" style="font-size:40px">공통파트 산출물을 점검하세요</div><p class="mini" style="margin-top:6px">샘플코드 · 공통함수 중, AI가 읽을 수 있는 규칙과 명세는 무엇인가?</p></div></div>
+    <div class="card" style="flex-direction:row;align-items:center;justify-content:flex-start;gap:32px;padding:24px 40px"><div class="num">2</div><div><div class="big" style="font-size:40px">가장 난독인 AS-IS 하나로 시작하세요</div><p class="mini" style="margin-top:6px">해독 결과를 구조화해 남기면 사람과 AI가 같이 씁니다</p></div></div>
+    <div class="card" style="flex-direction:row;align-items:center;justify-content:flex-start;gap:32px;padding:24px 40px"><div class="num">3</div><div><div class="big" style="font-size:40px">개발 앞단에 입력을 만드세요</div><p class="mini" style="margin-top:6px">분석 · 설계 · 테스트 목록이 있어야 AI가 일정한 품질로 짭니다</p></div></div>
+    <div class="card fill" style="flex:none;padding:22px 40px"><p style="margin:0;font-size:32px"><b>각자 프로젝트의 경험을 나눠 주세요</b> — 규칙과 프롬프트를 같이 쌓으면 하네스가 빨리 자랍니다</p></div>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 공통파트 Before" data-notes="기존 공통파트가 해 오던 일. 질문이 나올 때 사용.">
+  <div class="head"><h2>공통파트 Before: 우리가 해 오던 일</h2><div class="sub">이 모델은 사람에게 잘 통했습니다</div></div>
+  <div class="body">
+    <div class="row grow"><div class="card"><h3>프레임워크 구성</h3><p>기본 구조와 규칙</p></div><div class="card"><h3>샘플화면 · 샘플코드</h3><p>보고 따라 짜는 기준</p></div></div>
+    <div class="row grow"><div class="card"><h3>시스템관리 페이지</h3><p>운영 기반 화면</p></div><div class="card"><h3>공통함수 관리</h3><p>재사용과 일관성</p></div></div>
+    <p class="big" style="font-size:42px;flex:none">샘플을 보고 따라 짜면 <span class="y">→ 품질이 일정했다</span></p>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 프로젝트 소개 — 개요" data-notes="프로젝트 개요 상세. PM님 착수보고 자료 기준.">
+  <div class="head"><h2>Global One HR 프로젝트</h2><div class="sub">글로벌 확장과 AI 기반 일하는 방식을 뒷받침할 차세대 그룹 HR 시스템 구축</div></div>
+  <div class="body">
+    <div class="row" style="flex:none">
+      <div class="card"><div class="stat">19<small>개월</small></div><p class="mini">Wave 1 구축 기간<br>'26.09 ~ '28.03</p></div>
+      <div class="card"><div class="stat">22<small>개 법인</small></div><p class="mini">Wave 1 적용 대상<br>국내 18 · 해외 4</p></div>
+      <div class="card"><div class="stat">42<small>명</small></div><p class="mini">착수 시점 수행 조직<br>HR 12 · IT 30</p></div>
+      <div class="card fill"><div class="stat" style="color:var(--on-accent);font-size:84px;white-space:nowrap">'28.03</div><p class="mini">Wave 1 Grand Open</p></div>
+    </div>
+    <div class="card plain grow">
+      <h3>왜 하는가</h3>
+      <ul class="dot">
+        <li>글로벌 확장 · 조직관리의 한계, 시스템 노후화(보증 만료)</li>
+        <li>국내 중심 HR 시스템 → 그룹·글로벌 Standard, AI 기반 업무 혁신을 지원하는 체계로 전환</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tag">프로젝트 소개 1 / 2</div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 프로젝트 소개 — 구축 범위와 우리의 자리" data-notes="구축 범위 상세. PM님 착수보고 자료 기준.">
+  <div class="head"><h2>구축 범위, 그리고 우리가 마주할 일</h2><div class="sub">SuccessFactors 표준을 기본으로, 국내 특수 영역만 보완</div></div>
+  <div class="body">
+    <div class="row" style="flex:1">
+      <div class="card"><h3>표준 영역</h3><ul class="dot"><li>SAP SuccessFactors 표준 기반 구축</li><li>Wave 1에서 Standard 정립 → 2030년까지 단계적 확산</li></ul></div>
+      <div class="card fill"><h3>국내 특수 영역</h3><ul class="dot"><li>급여 · 근태 · 복리후생 · 국내채용 등</li><li>SI 개발과 3rd Party로 보완</li></ul></div>
+    </div>
+    <div class="card plain" style="flex:none">
+      <p class="big" style="font-size:44px">국내 특수 영역을 개발하려면 <span class="y">기존 GHR(AS-IS) 소스를 읽고 이해</span>해야 합니다</p>
+      <p class="mini">→ 이 프로젝트의 허들 중 하나</p>
+    </div>
+  </div>
+  <div class="tag">프로젝트 소개 2 / 2</div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] ① 코드분석기" data-notes="코드분석기 상세.">
+  <div class="head"><h2>① 코드분석기</h2><div class="sub">난독 AS-IS 소스를 분석해 HTML 양식으로 요약 정리</div></div>
+  <div class="body" style="flex-direction:row;gap:40px">
+    <div style="flex:.8;display:flex;flex-direction:column;gap:24px">
+      <div class="card grow"><h3>하는 일</h3><ul class="dot"><li>AS-IS 소스(화면, 로직, 데이터)를 분석</li><li>읽기 쉬운 HTML 양식으로 요약 정리</li><li>Spec Agent보다 앞단에서 분석본을 먼저 생성</li></ul></div>
+      <div class="card fill" style="flex:none"><p style="margin:0"><b>읽는 시간을 줄이는 번역기</b></p></div>
+    </div>
+    <figure class="media" style="flex:1.2;margin:0" data-src="media/01-source-decoder.mp4" data-label="코드분석기 데모 (동영상 또는 이미지)"></figure>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] ② 목업 스튜디오" data-notes="목업 스튜디오 상세.">
+  <div class="head"><h2>② 목업 스튜디오</h2><div class="sub">분석본을 활용해 목업 HTML을 만들고 화면설계서 작성을 지원</div></div>
+  <div class="body" style="flex-direction:row;gap:40px">
+    <div style="flex:.8;display:flex;flex-direction:column;gap:24px">
+      <div class="card grow"><h3>하는 일</h3><ul class="dot"><li>요구사항 Prompt · 이미지로 목업 HTML 생성</li><li>고정 디자인 시스템으로 정규화해 일관성 확보</li><li>Preview 확인과 AI 수정, 화면설계서(pptx) 작성</li><li>md · html 동시 생성은 예정 (AI가 읽기 쉽게)</li></ul></div>
+      <div class="card fill" style="flex:none"><p style="margin:0"><b>산출물 초안을 만드는 작성기</b></p></div>
+    </div>
+    <figure class="media" style="flex:1.2;margin:0" data-src="media/02-mockup-studio.mp4" data-label="목업 스튜디오 데모 (동영상 또는 이미지)"></figure>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] ③ 개발자 워크벤치" data-notes="개발자 워크벤치 상세.">
+  <div class="head"><h2>③ 개발자 워크벤치</h2><div class="sub">화면 개발 시 기존 소스 분석 내용을 확인하고, 기능 누락 없이 개발</div></div>
+  <div class="body" style="flex-direction:row;gap:40px">
+    <div style="flex:.8;display:flex;flex-direction:column;gap:24px">
+      <div class="card grow"><h3>하는 일</h3><ul class="dot"><li>화면별 기존 소스 분석 내용을 확인</li><li>기능 누락 없이 개발하도록 체크 제공</li><li>규격과 분석본을 개발 시점에 제공</li><li>테스트 목록 생성 → Test Agent 연계</li></ul></div>
+      <div class="card fill" style="flex:none"><p style="margin:0"><b>일정한 품질의 구현을 돕는 작업대</b></p></div>
+    </div>
+    <figure class="media" style="flex:1.2;margin:0" data-src="media/03-dev-workbench.mp4" data-label="개발자 워크벤치 데모 (동영상 또는 이미지)"></figure>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 독자 ① PL" data-notes="PL 상세.">
+  <div class="head"><h2>① PL: 산출물 압박을 덜어줍니다</h2><div class="sub">주로 쓰는 도구: 코드분석기, 목업 스튜디오</div></div>
+  <div class="body">
+    <div class="row grow">
+      <div class="card"><h3>Pain</h3><ul class="dot"><li>양식은 정해져 있는데 AS-IS 분석 시간이 부족</li><li>화면마다 비슷한 문서 반복</li><li>작성자별 품질 편차</li></ul></div>
+      <div class="card"><h3>제공 가치</h3><ul class="dot"><li>화면설계서 · 요구사항 초안</li><li>목업으로 먼저 확인</li><li>항상 같은 양식과 규칙</li></ul></div>
+      <div class="card fill"><h3>역할 변화</h3><p class="big" style="font-size:44px;margin-top:18px">작성자에서<br>검수자 · 의사결정자로</p></div>
+    </div>
+    <div class="card plain" style="flex:none;padding:22px 38px"><p style="margin:0"><b class="y">DEMO</b>&nbsp; 요구사항 Prompt 입력 → 목업과 설계서 항목 생성</p></div>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 독자 ② 개발자" data-notes="개발자 상세.">
+  <div class="head"><h2>② 개발자: 읽는 시간을 돌려줍니다</h2><div class="sub">주로 쓰는 도구: 코드분석기, 개발자 워크벤치</div></div>
+  <div class="body">
+    <div class="row grow">
+      <div class="card"><h3>Pain</h3><ul class="dot"><li>주석 없는 PeopleCode</li><li>이벤트별로 흩어진 로직</li><li>SQL, XML을 오가며 추적</li></ul></div>
+      <div class="card"><h3>제공 가치</h3><ul class="dot"><li>화면 단위 로직 요약</li><li>데이터 흐름 정리</li><li>기능 누락 점검과 분석본</li></ul></div>
+      <div class="card fill"><h3>역할 변화</h3><p class="big" style="font-size:44px;margin-top:18px">읽는 시간이<br>설계 · 구현 시간으로</p></div>
+    </div>
+    <div class="card plain" style="flex:none;padding:22px 38px"><p style="margin:0"><b class="y">DEMO</b>&nbsp; 난독 소스에서 로직 요약과 화면 구조 확인</p></div>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 독자 ③ AI 모델" data-notes="AI 모델 상세.">
+  <div class="head"><h2>③ AI 모델: 구현 컨텍스트를 줍니다</h2><div class="sub">바이브코딩의 품질은 컨텍스트가 결정합니다</div></div>
+  <div class="body">
+    <div class="row grow">
+      <div class="card"><h3>Pain</h3><ul class="dot"><li>AI도 난독 AS-IS 앞에서는 똑같이 헤맴</li><li>사람마다 다른 프롬프트</li><li>코드 품질 편차</li></ul></div>
+      <div class="card"><h3>제공 가치</h3><ul class="dot"><li>구조화된 명세 (화면, 로직, 데이터)</li><li>고정 디자인 시스템 규칙</li><li>개발자가 AI에게 넘길 지시 단위</li></ul></div>
+      <div class="card fill"><h3>역할 변화</h3><p class="big" style="font-size:44px;margin-top:18px">사람용과 AI용을<br>같은 원본에서</p></div>
+    </div>
+    <div class="card plain" style="flex:none;padding:22px 38px"><p style="margin:0"><b class="y">DEMO</b>&nbsp; 생성된 명세를 AI 모델에 넘겨 화면 하나 구현</p></div>
+  </div>
+</section>
+
+<section data-appendix="1" class="slide" data-title="[부록] 세 구성원의 Before / After" data-notes="구성원별 Before/After. 수치는 실측 후 교체.">
+  <div class="head"><h2>세 구성원의 Before / After</h2><div class="sub">수치는 실측 후 교체</div></div>
+  <div class="body"><table>
+    <thead><tr><th>구성원</th><th>Before</th><th>After</th><th>줄어드는 것</th></tr></thead>
+    <tbody>
+      <tr><td>PL</td><td>양식에 맞춰 처음부터 작성</td><td>초안 검수와 보완</td><td class="dim">[ 실측 ] 작성 시간</td></tr>
+      <tr><td>개발자</td><td>난독 소스를 직접 추적</td><td>요약과 체크리스트로 파악</td><td class="dim">[ 실측 ] 분석 시간</td></tr>
+      <tr><td>AI 모델</td><td>컨텍스트 없이 추측</td><td>구조화된 명세 참조</td><td class="dim">[ 실측 ] 재작업 횟수</td></tr>
+    </tbody></table>
+    <p class="big y" style="font-size:36px;flex:none">한계도 솔직하게: 환각, 복잡한 비즈니스 로직, 컨텍스트 한계, 하네스 유지보수 부담</p></div>
+</section>
+
+</div></div>
+
+<div id="timer">00:00 / 15:00</div>
+<div id="bar"><i></i></div>
+<div id="hud"><button id="bToc">목차 (O)</button><button id="bNotes">노트 (N)</button><button id="bTheme">테마 (T)</button><button id="bFull">전체화면 (F)</button></div>
+<div id="hint">← → 이동 · O 목차 · N 발표자 노트 · T 테마 · F 전체화면 · S 타이머 · 샘플은 Esc 로 복귀</div>
+<div id="sampleView" aria-hidden="true">
+  <div id="sampleBar">
+    <button type="button" id="sampleBack">← 발표로 돌아가기</button>
+    <span id="sampleTitle"></span>
+    <div id="sampleTabs"></div>
+  </div>
+  <iframe id="sampleFrame" title="코드분석기 샘플"></iframe>
+</div>
+<div id="notes"></div>
+<div id="toc"><h4>목차</h4><div class="grid"></div></div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var stage=document.getElementById('stage');
+  var cur=0;
+
+  /* 슬라이드 번호 */
+  var mainN=slides.filter(function(s){return !s.hasAttribute('data-appendix')}).length;
+  slides.forEach(function(s,i){
+    if(i===0||i===mainN-1)return;
+    var n=document.createElement('div');n.className='pnum';
+    n.textContent=i<mainN?((i+1)+' / '+mainN):('부록 '+(i-mainN+1)+' / '+(slides.length-mainN));
+    s.appendChild(n);
+  });
+
+  /* 미디어 슬롯: media/ 폴더에 파일을 넣으면 자동으로 이미지·동영상이 표시됨 */
+  function fillMedia(el){
+    var src=el.getAttribute('data-src'),label=el.getAttribute('data-label')||'미디어';
+    var ph=document.createElement('div');ph.className='ph';
+    ph.innerHTML='<b>'+label+'</b>여기에 파일을 넣으세요<br><code>'+src+'</code>';
+    el.appendChild(ph);
+    var isVideo=/\.(mp4|webm|mov|m4v)$/i.test(src);
+    var node;
+    if(isVideo){
+      node=document.createElement('video');
+      node.controls=true;node.muted=true;node.loop=true;node.playsInline=true;node.preload='metadata';
+      node.addEventListener('loadeddata',function(){el.classList.add('loaded')});
+      node.addEventListener('error',function(){node.remove()});
+    }else{
+      node=document.createElement('img');node.alt=label;
+      node.addEventListener('load',function(){el.classList.add('loaded')});
+      node.addEventListener('error',function(){node.remove()});
+    }
+    node.src=src;el.appendChild(node);
+  }
+  [].forEach.call(document.querySelectorAll('.media'),fillMedia);
+
+  /* 스케일 */
+  function fit(){
+    var s=Math.min(innerWidth/1920,innerHeight/1080);
+    stage.style.transform='scale('+s+')';
+  }
+  addEventListener('resize',fit);fit();
+
+  /* 목차 */
+  var grid=document.querySelector('#toc .grid');
+  slides.forEach(function(s,i){
+    var b=document.createElement('button');
+    b.innerHTML='<em>'+(i+1)+'</em>'+s.getAttribute('data-title');
+    b.addEventListener('click',function(){document.body.classList.remove('toc');go(i)});
+    grid.appendChild(b);
+  });
+
+
+  /* 발표 타이머: S 표시/숨김, Shift+S 초기화 (15분 기준) */
+  var tStart=null,tEl=document.getElementById('timer');
+  function tick(){
+    if(tStart===null)return;
+    var s=Math.floor((Date.now()-tStart)/1000),m=Math.floor(s/60);
+    tEl.textContent=('0'+m).slice(-2)+':'+('0'+(s%60)).slice(-2)+' / 15:00';
+    tEl.classList.toggle('over',s>900);
+  }
+  setInterval(tick,500);
+  function toggleTimer(){document.body.classList.toggle('timer');if(tStart===null){tStart=Date.now();tick()}}
+  function resetTimer(){tStart=Date.now();tick()}
+  var notesEl=document.getElementById('notes'),bar=document.querySelector('#bar i');
+  function go(i){
+    if(i<0||i>=slides.length)return;
+    slides[cur].classList.remove('on');cur=i;slides[cur].classList.add('on');
+    bar.style.width=((cur+1)/slides.length*100)+'%';
+    notesEl.textContent=slides[cur].getAttribute('data-notes')||'';
+    [].forEach.call(grid.children,function(b,k){b.classList.toggle('cur',k===cur)});
+    /* 이동한 슬라이드의 동영상은 자동 재생하지 않음, 떠난 슬라이드의 동영상은 정지 */
+    slides.forEach(function(s,k){if(k!==cur)[].forEach.call(s.querySelectorAll('video'),function(v){v.pause()})});
+    try{history.replaceState(null,'','#'+(cur+1))}catch(e){}
+  }
+  function theme(){
+    var r=document.documentElement;
+    r.setAttribute('data-theme',r.getAttribute('data-theme')==='light'?'dark':'light');
+  }
+  function full(){
+    if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
+  }
+  document.getElementById('bToc').onclick=function(){document.body.classList.toggle('toc')};
+  document.getElementById('bNotes').onclick=function(){document.body.classList.toggle('shownotes')};
+  document.getElementById('bTheme').onclick=theme;
+  document.getElementById('bFull').onclick=full;
+
+  /* 코드분석기 샘플 3종: 전체 화면으로 열었다가 같은 장으로 복귀 */
+  var sampleView=document.getElementById('sampleView');
+  var sampleFrame=document.getElementById('sampleFrame');
+  var sampleTitle=document.getElementById('sampleTitle');
+  var sampleTabs=document.getElementById('sampleTabs');
+  var sampleList=[
+    {title:'통합결재함',code:'PERSON1604',src:'media/통합결재함.html'},
+    {title:'연차 현황관리',code:'ZTA_C0130',src:'media/연차 현황관리.html'},
+    {title:'연봉조정내역서',code:'PAYROLL010307',src:'media/연봉조정내역서.html'}
+  ];
+  var sampleAt=-1;
+  sampleList.forEach(function(item,i){
+    var b=document.createElement('button');
+    b.type='button';
+    b.textContent=item.title;
+    b.addEventListener('click',function(){openSample(i)});
+    sampleTabs.appendChild(b);
+  });
+  function hookSampleKeys(){
+    try{
+      var w=sampleFrame.contentWindow;
+      if(!w||w.__deckHook)return;
+      w.__deckHook=true;
+      w.addEventListener('keydown',function(e){
+        if(e.key==='Escape'){e.preventDefault();closeSample()}
+      });
+    }catch(err){}
+  }
+  function openSample(i){
+    if(i<0)i=sampleList.length-1;
+    if(i>=sampleList.length)i=0;
+    sampleAt=i;
+    var item=sampleList[i];
+    sampleTitle.textContent=item.title+' · '+item.code;
+    [].forEach.call(sampleTabs.children,function(b,k){b.classList.toggle('on',k===i)});
+    sampleFrame.src=item.src;
+    sampleView.classList.add('on');
+    sampleView.setAttribute('aria-hidden','false');
+  }
+  function closeSample(){
+    sampleView.classList.remove('on');
+    sampleView.setAttribute('aria-hidden','true');
+    sampleFrame.src='about:blank';
+    sampleAt=-1;
+  }
+  function stepSample(d){if(sampleAt<0)return;openSample(sampleAt+d)}
+  function onSampleKey(e){
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    var k=e.key;
+    if(k==='Escape'){e.preventDefault();closeSample()}
+    else if(k==='ArrowRight'||k==='ArrowLeft'){
+      e.preventDefault();
+      stepSample(k==='ArrowRight'?1:-1);
+    }
+  }
+  sampleFrame.addEventListener('load',hookSampleKeys);
+  document.getElementById('sampleBack').addEventListener('click',closeSample);
+  [].forEach.call(document.querySelectorAll('[data-sample]'),function(b){
+    b.addEventListener('click',function(e){e.stopPropagation();openSample(parseInt(b.getAttribute('data-sample'),10))});
+  });
+
+  document.addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    if(sampleView.classList.contains('on')){onSampleKey(e);return}
+    var k=e.key,tag=e.target&&e.target.tagName;
+    if(k==='ArrowRight'||k==='PageDown'||(k===' '&&tag!=='VIDEO'&&tag!=='BUTTON'&&tag!=='IFRAME')){e.preventDefault();go(cur+1)}
+    else if(k==='ArrowLeft'||k==='PageUp'){e.preventDefault();go(cur-1)}
+    else if(k==='Home'){go(0)}
+    else if(k==='End'){go(slides.length-1)}
+    else if(k==='o'||k==='O'){document.body.classList.toggle('toc')}
+    else if(k==='Escape'){document.body.classList.remove('toc')}
+    else if(k==='n'||k==='N'){document.body.classList.toggle('shownotes')}
+    else if(k==='t'||k==='T'){theme()}
+    else if(k==='f'||k==='F'){full()}
+    else if(k==='p'||k==='P'){print()}
+    else if(k==='s'){toggleTimer()}
+    else if(k==='S'){resetTimer()}
+  });
+
+  /* 클릭: 오른쪽 절반 다음, 왼쪽 1/4 이전 (동영상·버튼 제외) */
+  document.getElementById('viewport').addEventListener('click',function(e){
+    if(e.target.closest('video,button,a,table'))return;
+    if(document.body.classList.contains('toc'))return;
+    if(e.clientX>innerWidth*0.5)go(cur+1);else if(e.clientX<innerWidth*0.25)go(cur-1);
+  });
+
+  /* 마우스를 움직이면 UI 잠깐 표시 */
+  var t;function showHud(){document.body.classList.add('hud');clearTimeout(t);t=setTimeout(function(){document.body.classList.remove('hud')},2500)}
+  addEventListener('mousemove',showHud);showHud();
+
+  var start=parseInt((location.hash||'').slice(1),10);
+  go(start>=1&&start<=slides.length?start-1:0);
+})();
+</script>
+</body>
+</html>
