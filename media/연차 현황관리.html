@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZTA_C0130 연차 현황관리 — 기존 화면 목업</title>
+<!--
+  기존 PeopleSoft 화면(ZTA_C0130) 재현 목업.
+  - 화면 구성: processed/ghr/domains/근태관리/휴가근태/생성관리/연차_현황관리(ZTA_C0130)
+    (README·pages/ZTA_C0130_STP_01.md·ZTA_C0130_STP_02.md, records/ZTA_C0130_DW·DV_01·DV_02·TP_01 README, shared/records/ZT_COMPANY_V·ZBA_COMBU_V),
+    스크린샷 screenshots/ZTA_C0130_1~5.png (배치·라벨·그리드 탭 열·편집 칸·행 추가/삭제 버튼·기본값 모양)
+    검색 레코드 INSTALLATION(검색키 없음) → 검색 화면 없이 바로 열림
+  - 동작: analysis/ghr/근태관리/휴가근태/생성관리/연차_현황관리(ZTA_C0130)/logic.json 의 흐름(FL)·규칙(BR), queries.json(Q)
+  - 요구사항: 같은 폴더 requirements.json (REQ 글자 그대로, 스크립트로 주입). 화면 영역마다 REQ 배지(data-req="REQ-ID:인수조건번호")
+  - 데이터: 전부 샘플. 코드값(XLAT) HR_STATUS(A 활성·I 비활성)·ZZ_GD_YN(Y 등록·N 삭제)·ZZ_PROCE_CD(S 정상·F 오류)만 실제 값
+-->
+<style>
+  :root {
+    --bg: #ffffff; --text: #333333; --muted: #6b6b6b; --link: #1c5aa6; --line: #c4c4c4;
+    --grid-head: #e8edf3; --grid-title: #7f9ebd; --grid-title-text: #ffffff; --tab: #dfe6ee; --tab-active: #ffffff;
+    --input-bg: #ffffff; --edit-bg: #ccffcc; --header: #2f4f6f; --header-text: #ffffff;
+    --note-bg: #fff8e1; --note-line: #e6c65c; --oq: #b35c00; --err-bg: #fdecea; --err-line: #d9534f;
+    --ok-bg: #e8f5e9; --ok-line: #5cb85c; --row-alt: #f7f9fb; --btn-bg: #f3f3f3; --req: #c00;
+    --rb-bg: #5b3fa8; --rb-text: #ffffff; --hl: #7b5cd6; --panel-bg: #f6f4fb; --box-line: #9fb6cf; --ro-bg: #eeeeee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1e2227; --text: #e3e6ea; --muted: #a0a7b0; --link: #7fb2ff; --line: #4a525c;
+      --grid-head: #2b323a; --grid-title: #33506d; --tab: #2b323a; --tab-active: #1e2227;
+      --input-bg: #262b31; --edit-bg: #23402a; --header: #16283a; --note-bg: #3a3320; --note-line: #8a7430;
+      --oq: #f0a050; --err-bg: #3d2322; --ok-bg: #213425; --row-alt: #242a30; --btn-bg: #2f363e; --req: #ff7b7b;
+      --rb-bg: #9c85ea; --rb-text: #16121f; --hl: #b29df5; --panel-bg: #23212b; --box-line: #3d5670; --ro-bg: #30363d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1e2227; --text: #e3e6ea; --muted: #a0a7b0; --link: #7fb2ff; --line: #4a525c;
+    --grid-head: #2b323a; --grid-title: #33506d; --tab: #2b323a; --tab-active: #1e2227;
+    --input-bg: #262b31; --edit-bg: #23402a; --header: #16283a; --note-bg: #3a3320; --note-line: #8a7430;
+    --oq: #f0a050; --err-bg: #3d2322; --ok-bg: #213425; --row-alt: #242a30; --btn-bg: #2f363e; --req: #ff7b7b;
+    --rb-bg: #9c85ea; --rb-text: #16121f; --hl: #b29df5; --panel-bg: #23212b; --box-line: #3d5670; --ro-bg: #30363d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 12px/1.45 Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+  a { color: var(--link); text-decoration: none; cursor: pointer; }
+  a:hover { text-decoration: underline; }
+  .topbar { background: var(--header); color: var(--header-text); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .topbar b { font-size: 14px; }
+  .topbar .links { font-size: 11px; }
+  .wrap { padding: 10px 16px 40px; max-width: 1180px; }
+  .crumb { color: var(--muted); font-size: 11px; margin: 4px 0 8px; }
+  .note { background: var(--note-bg); border: 1px solid var(--note-line); padding: 8px 10px; margin-bottom: 10px; font-size: 11.5px; }
+  .note label { white-space: nowrap; cursor: pointer; margin-left: 14px; }
+  .note .note-h { display: flex; justify-content: space-between; align-items: center; gap: 6px 14px; flex-wrap: wrap; }
+  .note dl { display: grid; grid-template-columns: 64px 1fr; gap: 3px 10px; margin: 6px 0 0; }
+  .note dt { color: var(--muted); font-weight: bold; }
+  .note dd { margin: 0; }
+  .note .key { display: inline-block; margin-right: 14px; }
+  .note .src { color: var(--muted); word-break: break-all; font-size: 11px; }
+  @media (max-width: 600px) { .note dl { grid-template-columns: 1fr; gap: 0; } .note dd { margin-bottom: 4px; } .note label { margin-left: 0; margin-right: 10px; } }
+  .hint { color: var(--muted); margin: 0 0 8px; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-top: 6px; flex-wrap: wrap; align-items: flex-end; }
+  .tabs a { background: var(--tab); border: 1px solid var(--line); border-bottom: none; padding: 4px 12px; color: var(--text); border-radius: 4px 4px 0 0; }
+  .tabs a.on { background: var(--tab-active); font-weight: bold; position: relative; top: 1px; }
+  .page { border: 1px solid var(--line); border-top: none; padding: 12px; }
+  .row { display: flex; align-items: center; gap: 6px; margin: 5px 0; flex-wrap: wrap; min-height: 24px; }
+  .lbl { white-space: nowrap; width: 70px; font-weight: bold; }
+  input[type=text], select { font: inherit; color: var(--text); background: var(--input-bg); border: 1px solid var(--line); padding: 1px 4px; max-width: 100%; height: 22px; }
+  input.edit { background: var(--edit-bg); }
+  input.num { text-align: right; }
+  .bad { border-color: var(--err-line) !important; box-shadow: 0 0 0 1px var(--err-line); background: var(--err-bg) !important; }
+  .w60 { width: 60px; } .w240 { width: 240px; }
+  .toolbar { margin: 8px 0 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  button { font: inherit; color: var(--text); background: var(--btn-bg); border: 1px solid var(--line); border-radius: 3px; padding: 3px 12px; cursor: pointer; }
+  .ico { width: 20px; height: 20px; line-height: 14px; padding: 0; font-weight: bold; color: var(--link); border-color: var(--link); }
+  .fname { display: none; color: var(--muted); font-size: 10.5px; font-family: Consolas, monospace; }
+  body.show-fname .fname { display: inline; }
+  .box { border: 1px solid var(--box-line); padding: 6px 8px; max-width: 960px; margin-top: 8px; }
+  .boxh { background: var(--grid-title); color: var(--grid-title-text); padding: 2px 8px; font-weight: bold; margin: -6px -8px 6px; }
+  .grid { border: 1px solid var(--line); margin-top: 10px; overflow-x: auto; max-width: 960px; }
+  .grid.rfocus { overflow: visible; }
+  .grid-title { background: var(--grid-title); color: var(--grid-title-text); padding: 4px 8px; display: flex; justify-content: space-between; align-items: center; gap: 4px 10px; flex-wrap: wrap; font-size: 11px; min-height: 22px; }
+  .grid-title .nav { opacity: .9; }
+  .grid-title b { font-size: 12px; }
+  table.g { border-collapse: collapse; width: 100%; }
+  table.g th { background: var(--grid-head); text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); color: var(--link); white-space: nowrap; }
+  table.g td { padding: 2px 6px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); white-space: nowrap; height: 22px; }
+  table.g td.rn { color: var(--muted); width: 28px; text-align: right; }
+  table.g tr:nth-child(even) td { background: var(--row-alt); }
+  .oq { color: var(--oq); font-size: 11px; cursor: help; border-bottom: 1px dotted var(--oq); font-weight: normal; margin-left: 4px; white-space: nowrap; }
+  .msg { padding: 8px 10px; margin: 10px 0; border: 1px solid; display: none; max-width: 960px; white-space: pre-wrap; }
+  .msg.err { background: var(--err-bg); border-color: var(--err-line); display: block; }
+  .msg.ok { background: var(--ok-bg); border-color: var(--ok-line); display: block; }
+  .mock { border: 1px dashed var(--line); padding: 6px 8px; margin-top: 14px; font-size: 11px; color: var(--muted); max-width: 960px; overflow-x: auto; }
+  .mock.rfocus { overflow: visible; }
+  .mock b { color: var(--text); }
+  .mock table.g td, .mock table.g th { font-size: 11px; color: var(--text); }
+  .pop { position: fixed; inset: 0; background: rgba(0,0,0,.3); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 30; }
+  .pop.on { display: flex; }
+  .pop .pbox { background: var(--bg); border: 1px solid var(--line); padding: 12px; width: 100%; max-width: 560px; max-height: 84vh; overflow: auto; }
+  .pop textarea { width: 100%; font: 11px Consolas, monospace; color: var(--text); background: var(--input-bg); border: 1px solid var(--line); }
+  /* ---- 요구사항(REQ) 배지·초점·패널 ---- */
+  .rb { display: inline-block; font: bold 10px/16px Arial, sans-serif; padding: 0 6px; border-radius: 8px; background: var(--rb-bg); color: var(--rb-text) !important; cursor: pointer; margin-left: 4px; vertical-align: middle; white-space: nowrap; text-decoration: none !important; }
+  .rb:hover { filter: brightness(1.15); }
+  .topbar .rtoggle { background: var(--rb-bg); color: var(--rb-text); border: none; font-weight: bold; padding: 3px 10px; margin-left: 8px; }
+  body.focusing::before { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 15; }
+  .rfocus { position: relative; z-index: 16; background-color: var(--bg); outline: 2px solid var(--hl); outline-offset: 3px; border-radius: 2px; }
+  th.rfocus { background-color: var(--grid-head); }
+  .rfocus.rcur { outline-width: 3px; animation: pulse 1.4s ease-out 1; }
+  .rfocus::after { content: attr(data-flabel); position: absolute; left: -5px; top: -21px; background: var(--hl); color: #fff; font: bold 10px/14px Arial, sans-serif; padding: 1px 6px; border-radius: 3px 3px 0 0; white-space: nowrap; pointer-events: none; }
+  :is(th, td, li, button).rfocus:not(.rcur)::after { display: none; }
+  @keyframes pulse { 0% { outline-offset: 12px; } 100% { outline-offset: 3px; } }
+  ol.ac { list-style: none; padding: 0; margin: 6px 0; }
+  ol.ac li { display: flex; gap: 6px; padding: 3px 6px; margin-bottom: 2px; color: var(--muted); }
+  ol.ac li .mk { flex: 0 0 auto; width: 24px; font-family: Consolas, monospace; }
+  .brs, .notes { font-size: 11px; margin-top: 4px; }
+  .br { border-bottom: 1px dotted var(--muted); cursor: help; margin-right: 4px; }
+  .rpanel { position: fixed; top: 0; right: 0; bottom: 0; width: 340px; max-width: 100%; background: var(--panel-bg); color: var(--text); border-left: 1px solid var(--line); overflow-y: auto; transform: translateX(100%); transition: transform .2s; z-index: 20; font-size: 12px; }
+  body.rp-open .rpanel { transform: none; }
+  @media (min-width: 900px) { body.rp-open .wrap, body.rp-open .topbar { margin-right: 340px; } }
+  @media (max-width: 899px) {
+    .rpanel { top: auto; width: 100%; height: 50vh; border-left: none; border-top: 2px solid var(--hl); transform: translateY(100%); box-shadow: 0 -4px 16px rgba(0,0,0,.25); }
+    body.rp-open { padding-bottom: 50vh; }
+  }
+  .rp-head { position: sticky; top: 0; background: var(--panel-bg); border-bottom: 1px solid var(--line); padding: 10px 12px; z-index: 1; }
+  .rp-head .t { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .rp-head b { font-size: 13px; }
+  .rp-hint { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .rq { border-bottom: 1px solid var(--line); padding: 8px 12px; cursor: pointer; scroll-margin-top: 84px; }
+  .rq:hover { background: var(--row-alt); }
+  .rq.on { background: var(--tab); box-shadow: inset 3px 0 0 var(--hl); }
+  .rq .h { display: flex; gap: 6px; align-items: baseline; }
+  .rq .h .rb { margin-left: 0; }
+  .rq .h b { flex: 1; }
+  .rq .st { margin: 4px 0; }
+  .rq .loc { font-size: 11px; color: var(--muted); }
+  .rq .loc span { display: inline-block; border: 1px solid var(--line); border-radius: 8px; padding: 0 6px; margin: 2px 4px 0 0; }
+  .rq .loc span[data-go] { cursor: pointer; }
+  .rq .loc span[data-go]:hover { border-color: var(--hl); }
+  .rq .loc span.here { border-color: var(--hl); color: var(--hl); font-weight: bold; }
+  .rq .h .cnt { color: var(--muted); font-size: 11px; }
+  .rq .x { display: none; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); cursor: default; }
+  .rq.on .x { display: block; }
+  .rq.on .st { font-weight: bold; }
+  .rq .meta { color: var(--muted); font-size: 11px; }
+  .rq .away { margin: 6px 0; color: var(--oq); font-size: 11px; }
+  .cols { display: flex; gap: 10px 40px; flex-wrap: wrap; }
+  .w120 { width: 120px; } .w180 { width: 180px; }
+  .gtabs { display: flex; gap: 2px; padding: 4px 6px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .gtabs a { background: var(--tab); border: 1px solid var(--line); border-bottom: none; padding: 2px 10px; color: var(--text); border-radius: 3px 3px 0 0; font-size: 11px; }
+  .gtabs a.on { background: var(--grid-title); color: var(--grid-title-text); font-weight: bold; }
+  .gt { overflow-x: auto; }
+  .gt.rfocus { overflow: visible; }
+  table.g td.nr { text-align: right; }
+  .plinks { margin-top: 10px; font-size: 12px; }
+  .grid { max-width: 1100px; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <b>CJ HR — PeopleSoft</b>
+  <span class="links">홈 | 즐겨찾기에 추가 | 로그아웃 <button class="rtoggle" id="rpToggle" type="button" title="요구사항 패널 열기/닫기">요구사항</button></span>
+</div>
+<div class="wrap">
+  <div class="crumb" data-req="REQ-ZTA_C0130-001:1" title="검색 레코드 INSTALLATION(검색키 없음) — 검색 화면 없이 바로 열림 (BR-ZTA_C0130-001)">근태관리 &gt; 휴가근태 &gt; 생성관리 &gt; 연차 현황관리 <a class="rb" data-rb="REQ-ZTA_C0130-001">REQ-001</a></div>
+  <div class="note">
+    <div class="note-h">
+      <b>기존 화면 재현 목업 · ZTA_C0130 연차 현황관리</b>
+      <span><label><input type="checkbox" id="optFname"> 레코드.필드명 표시</label><label><input type="checkbox" id="optAdd" checked> (목업 설명) 사용자에게 '추가' 권한 있음</label></span>
+    </div>
+    <dl>
+      <dt>재현 범위</dt><dd>검색 화면 없이 열리는 두 탭(연차 현황관리 STP_01, 연차 일괄로드 STP_02), 조회 조건, 연차관리 그리드(그리드 탭 기준·발생·사용·잔여), 업로드 결과·처리결과 그리드, 회사·비즈니스 단위·사번 찾기 팝업은 원천·스크린샷 그대로. 기본값(BR-002·003·025), 조건 연동(BR-004~007), 조회·계산(BR-009~017), 행 추가·재계산(BR-018~021), 저장 권한·저장(BR-023·024), 업로드·검증·결과·일괄 저장(BR-027~030)은 분석대로. 파일 선택은 탭 구분 텍스트를 붙여 넣는 창으로 대신함. 분석 범위 밖이라 뺀 것: 템플릿 파일 내용(OQ-03), 부서·자격 그룹·조건 사번 찾기 팝업 내용, 사원 인적사항 영역 내용(OQ-01), 그리드 머리줄 표준 기능(글자만).</dd>
+      <dt>데이터</dt><dd>전부 샘플. 내 기본 회사 E10 / 비즈니스 단위 E10BU, 년도 = 올해. 회사 E10 은 선사용 포함 회사(BR-014). 사원 E1001·E1002 는 올해 연차 생성됨(C), E1003 은 미생성이지만 연차 사용 실적 있음(N, <span class="oq" data-oq="OQ-ZTA_C0130-02">OQ-02</span>), E1004 는 행 추가용, E1001 은 단축근무 1시간. 계산 차이 <span class="oq" data-oq="OQ-ZTA_C0130-04">OQ-04</span>, 선사용 25일 <span class="oq" data-oq="OQ-ZTA_C0130-05">OQ-05</span>.</dd>
+      <dt>표시</dt><dd><span class="key"><a class="rb" style="margin-left:0;cursor:default">REQ-nnn</a> 요구사항 — 누르면 해당 영역에 초점 (Esc·바깥 클릭으로 닫기)</span><span class="key"><span class="oq" style="margin-left:0">OQ-nn</span> 현업 확인 필요(툴팁)</span><span class="key"><b style="color:var(--req)">*</b> 필수</span><span class="key">초록 칸 = 입력 가능</span></dd>
+      <dt>출처</dt><dd><span class="src">원천 processed/ghr/domains/근태관리/휴가근태/생성관리/연차_현황관리(ZTA_C0130) · 스크린샷 ZTA_C0130_1~5.png<br>분석 analysis/ghr/근태관리/휴가근태/생성관리/연차_현황관리(ZTA_C0130)</span></dd>
+    </dl>
+  </div>
+
+  <div class="tabs" data-req="REQ-ZTA_C0130-001:2 REQ-ZTA_C0130-010:1"><a class="on" id="tab1">연차 현황관리</a><a id="tab2">연차 일괄로드</a></div>
+
+  <!-- ================= 연차 현황관리 (ZTA_C0130_STP_01) ================= -->
+  <section id="viewP1" class="page">
+    <div class="box" style="margin-top:0;max-width:1100px" data-req="REQ-ZTA_C0130-001:3 REQ-ZTA_C0130-003:1 REQ-ZTA_C0130-004:2">
+      <div class="cols">
+        <div>
+          <div class="row" data-req="REQ-ZTA_C0130-002:1 REQ-ZTA_C0130-003:2"><span class="lbl"><b style="color:var(--req)">*</b>회사:</span><input type="text" class="w60" id="cCo" maxlength="3"><button type="button" class="ico" id="btnCoPop" title="찾기 (ZT_COMPANY_V)">🔍</button><input type="text" class="w180" id="cCoNm" readonly><span class="fname">ZTA_C0130_DW.COMPANY · ZT_COMPANY_V.DESCR</span><a class="rb" data-rb="REQ-ZTA_C0130-002">REQ-002</a><a class="rb" data-rb="REQ-ZTA_C0130-003">REQ-003</a></div>
+          <div class="row" data-req="REQ-ZTA_C0130-003:3"><span class="lbl"><b style="color:var(--req)">*</b>비즈니스 단위:</span><input type="text" class="w60" id="cBu" maxlength="5"><button type="button" class="ico" id="btnBuPop" title="찾기 (ZBA_COMBU_V)">🔍</button><input type="text" class="w180" id="cBuNm" readonly><span class="fname">ZTA_C0130_DW.BUSINESS_UNIT</span></div>
+          <div class="row" data-req="REQ-ZTA_C0130-003:6 REQ-ZTA_C0130-004:3"><span class="lbl">부서:</span><input type="text" class="w60" id="cDept" maxlength="10"><button type="button" class="ico" disabled title="찾기 (ZZ_DEPT_SCH_V_5) — (목업 설명) 팝업 생략">🔍</button><input type="text" class="w180" id="cDeptNm" readonly><label><input type="checkbox" id="cSub"> 하위부서포함</label><span class="fname">ZTA_C0130_DW.DEPTID · ZZ_YN</span></div>
+          <div class="row"><span class="lbl">사번:</span><input type="text" class="w60" id="cEmp" maxlength="11"><button type="button" class="ico" disabled title="찾기 (ZTS_E_CB_DV2) — (목업 설명) 팝업 생략">🔍</button><input type="text" class="w180" id="cEmpNm" readonly><span class="fname">ZTA_C0130_DW.ZZ_EMPNO</span></div>
+        </div>
+        <div>
+          <div class="row" data-req="REQ-ZTA_C0130-002:2"><span class="lbl"><b style="color:var(--req)">*</b>년도:</span><input type="text" class="w60 num" id="cYr" maxlength="4"><span class="fname">ZTA_C0130_DW.ZZ_YEAR</span></div>
+          <div class="row"><span class="lbl">자격 그룹:</span><input type="text" class="w60" id="cElig" maxlength="10"><button type="button" class="ico" disabled title="찾기 (ZT_ELIG_GRP_V) — (목업 설명) 팝업 생략">🔍</button><input type="text" class="w120" readonly><span class="fname">ZTA_C0130_DW.ELIG_GRP</span></div>
+          <div class="row"><span class="lbl">재직 여부:</span><select id="cHr"><option value=""></option><option value="A">활성</option><option value="I">비활성</option></select><span class="fname">ZTA_C0130_DW.HR_STATUS</span>
+            <span data-req="REQ-ZTA_C0130-004:1"><button type="button" id="btnSearch" style="width:90px;margin-left:20px" title="ZTA_C0130_DW.ZZ_BTN_01 (19,173) — FL-ZTA_C0130-07">검색</button><a class="rb" data-rb="REQ-ZTA_C0130-004">REQ-004</a></span></div>
+        </div>
+      </div>
+      <div id="empInfo" class="mock" style="margin-top:6px" data-req="REQ-ZTA_C0130-003:7">(목업 설명) 사원 인적사항 영역(ZZ_EMPL_SUB_01)은 처음부터 숨김 상태입니다. 이 자리에 원래 영역이 있으나 화면에 보이지 않습니다 (BR-ZTA_C0130-008) <span class="oq" data-oq="OQ-ZTA_C0130-01">OQ-01</span></div>
+    </div>
+    <div id="msg1" class="msg"></div>
+
+    <div class="grid" id="g1" data-req="REQ-ZTA_C0130-001:4,5 REQ-ZTA_C0130-004:4,5 REQ-ZTA_C0130-006:2,3,4">
+      <div class="grid-title" data-req="REQ-ZTA_C0130-005:1"><b>연차관리 <a class="rb" data-rb="REQ-ZTA_C0130-005">REQ-005</a><a class="rb" data-rb="REQ-ZTA_C0130-006">REQ-006</a></b><span class="fname" style="color:inherit">ZTA_C0130_DV_01 (22500,247)</span><span class="nav">개인 설정 | 찾기 | 모두 보기 | ▣ | ▦ &nbsp; 첫번째 ◀ <span id="g1Pos">1(1개 중)</span> ▶ 마지막</span></div>
+      <div class="gtabs" id="gtabs"><a data-gt="gtBase" class="on">기준</a><a data-gt="gtOcc">발생</a><a data-gt="gtUse">사용</a><a data-gt="gtRem">잔여</a></div>
+      <div id="gtBase" class="gt" data-req="REQ-ZTA_C0130-005:2"><table class="g"><thead><tr id="hBase"></tr></thead><tbody id="bBase"></tbody></table></div>
+      <div id="gtOcc" class="gt" data-req="REQ-ZTA_C0130-005:3 REQ-ZTA_C0130-007:1,2" style="display:none"><table class="g"><thead><tr id="hOcc"></tr></thead><tbody id="bOcc"></tbody></table></div>
+      <div id="gtUse" class="gt" data-req="REQ-ZTA_C0130-005:4 REQ-ZTA_C0130-007:1,3" style="display:none"><table class="g"><thead><tr id="hUse"></tr></thead><tbody id="bUse"></tbody></table></div>
+      <div id="gtRem" class="gt" data-req="REQ-ZTA_C0130-005:5 REQ-ZTA_C0130-007:1,4,5" style="display:none"><table class="g"><thead><tr id="hRem"></tr></thead><tbody id="bRem"></tbody></table></div>
+      <div class="toolbar" style="margin:4px 6px" data-req="REQ-ZTA_C0130-006:1"><button type="button" class="ico" id="btnAdd" title="행 추가 (스크린샷 ZTA_C0130_2.png)">+</button><span class="hint" style="margin:0">(목업 설명) 행 추가 후 사번 칸에 입력하거나 돋보기로 찾습니다. 행마다 − 로 삭제</span></div>
+    </div>
+    <div class="toolbar" data-req="REQ-ZTA_C0130-008:1,2 REQ-ZTA_C0130-009:1,2,3,4,5,6">
+      <button type="button" id="btnSave1" style="width:80px" title="ZTA_C0130_DW.ZZ_BTN_02 (19,172) — FL-ZTA_C0130-10">저장</button><a class="rb" data-rb="REQ-ZTA_C0130-008">REQ-008</a><a class="rb" data-rb="REQ-ZTA_C0130-009">REQ-009</a>
+      <span class="oq" data-oq="OQ-ZTA_C0130-06">OQ-06</span><span class="oq" data-oq="OQ-ZTA_C0130-09">OQ-09</span></div>
+    <div class="plinks" data-req="REQ-ZTA_C0130-001:2,6">연차 현황관리 | <a data-tab="2">연차 일괄로드</a> <span class="hint">(표준 툴바 버튼 없음 — 스크린샷 기준)</span> <span class="oq" data-oq="OQ-ZTA_C0130-08">OQ-08</span></div>
+  </section>
+
+  <!-- ================= 연차 일괄로드 (ZTA_C0130_STP_02) ================= -->
+  <section id="viewP2" class="page" style="display:none">
+    <div class="box" style="margin-top:0" data-req="REQ-ZTA_C0130-010:2">
+      <div class="row"><span class="lbl"><b style="color:var(--req)">*</b>회사:</span><input type="text" class="w60" id="uCo" maxlength="3"><button type="button" class="ico" disabled title="찾기 — (목업 설명) 연차 현황관리 탭과 같은 필드">🔍</button><input type="text" class="w180" id="uCoNm" readonly>
+        <span class="lbl" style="margin-left:30px"><b style="color:var(--req)">*</b>년도:</span><input type="text" class="w60 num" id="uYr" maxlength="4"><span class="fname">ZTA_C0130_DW.COMPANY · ZZ_YEAR</span></div>
+    </div>
+    <div class="row" style="margin:6px 0 0 4px"><span data-req="REQ-ZTA_C0130-012:1"><a id="btnTmpl" style="text-decoration:underline" title="ZTA_C0130_DW.ZZ_BTN_05 (18081,11024) — FL-ZTA_C0130-11">템플릿 다운로드</a><a class="rb" data-rb="REQ-ZTA_C0130-012">REQ-012</a><span class="oq" data-oq="OQ-ZTA_C0130-03">OQ-03</span></span>
+      <span style="flex:1"></span><span data-req="REQ-ZTA_C0130-014:3"><input type="text" id="uStatus" class="w240" readonly title="ZTA_C0130_DW.ZZ_CHAR100_01 (21000,77)"><a class="rb" data-rb="REQ-ZTA_C0130-014">REQ-014</a></span></div>
+    <div class="grid" data-req="REQ-ZTA_C0130-010:3 REQ-ZTA_C0130-014:1">
+      <div class="grid-title"><b>업로드 결과 <a class="rb" data-rb="REQ-ZTA_C0130-014">REQ-014</a></b><span class="fname" style="color:inherit">ZTA_C0130_DV_02 (21000,72)</span><span class="nav">개인 설정 | 찾기 | 모두 보기 | ▣ | ▦ &nbsp; 첫번째 ◀ 1(1개 중) ▶ 마지막</span></div>
+      <table class="g"><thead><tr><th></th><th>Total 건수</th><th>성공 건수</th><th>실패 건수</th></tr></thead><tbody id="sumBody"></tbody></table></div>
+    <div class="box" data-req="REQ-ZTA_C0130-010:4 REQ-ZTA_C0130-011:1"><div class="boxh">tempno <span class="oq" data-oq="OQ-ZTA_C0130-07" style="color:inherit">OQ-07</span><span class="fname" style="color:inherit">ZTA_C0130_DW.ZZ_CHAR_01 · ZZ_GD_YN</span></div>
+      <div class="row" style="padding-left:16px"><label><input type="radio" name="gd" value="Y"> 등록</label> &nbsp;&nbsp;&nbsp;&nbsp; <label><input type="radio" name="gd" value="N"> 삭제</label><a class="rb" data-rb="REQ-ZTA_C0130-011">REQ-011</a></div></div>
+    <div class="grid" data-req="REQ-ZTA_C0130-010:3 REQ-ZTA_C0130-014:2">
+      <div class="grid-title"><b>처리결과 <a class="rb" data-rb="REQ-ZTA_C0130-014">REQ-014</a></b><span class="fname" style="color:inherit">ZTA_C0130_TP_01 (처리상태 F) (22400,115)</span><span class="nav">개인 설정 | 찾기 | 모두 보기 | ▣ | ▦ &nbsp; 첫번째 ◀ <span id="tpPos">1(1개 중)</span> ▶ 마지막</span><span class="oq" data-oq="OQ-ZTA_C0130-07">OQ-07</span></div>
+      <table class="g"><thead><tr><th></th><th>처리상태</th><th>오류메세지</th><th>사원 ID</th><th>사번</th><th>기준년도</th></tr></thead><tbody id="errBody"></tbody></table></div>
+    <div id="msg2" class="msg" data-req="REQ-ZTA_C0130-013:4"></div>
+    <div class="toolbar">
+      <span data-req="REQ-ZTA_C0130-013:1,2"><button type="button" id="btnUpload" style="width:90px" title="ZTA_C0130_DW.ZZ_BTN_03 (124,81) — FL-ZTA_C0130-12">업로드</button><a class="rb" data-rb="REQ-ZTA_C0130-013">REQ-013</a></span>
+      <span data-req="REQ-ZTA_C0130-015:1,2,3,4,5"><button type="button" id="btnSave2" style="width:80px" title="ZTA_C0130_DW.ZZ_BTN_04 (19,172) — FL-ZTA_C0130-13">저장</button><a class="rb" data-rb="REQ-ZTA_C0130-015">REQ-015</a></span>
+      <span class="oq" data-oq="OQ-ZTA_C0130-06">OQ-06</span></div>
+    <div class="plinks"><a data-tab="1">연차 현황관리</a> | 연차 일괄로드</div>
+    <div class="mock" data-req="REQ-ZTA_C0130-013:3,5"><b>임시 테이블 ZTA_C0130_TP_01 (내 업로드 행 전체) — 목업 확인용</b> 원본 화면에는 없음. 적재 값·검증 결과(BR-ZTA_C0130-027·028). <a class="rb" data-rb="REQ-ZTA_C0130-013">REQ-013</a>
+      <table class="g"><thead><tr><th>순번</th><th>처리상태</th><th>오류메세지</th><th>회사</th><th>년도</th><th>사번</th><th>사원 ID</th><th>결근</th><th>휴직</th><th>기본</th><th>가산</th><th>발생조정</th><th>선사용</th><th>사용조정</th><th>경로변경</th><th>의무기준</th><th>발생일수</th><th>시작일</th><th>종료일</th><th>연차기준일자</th></tr></thead><tbody id="tpBody"></tbody></table></div>
+  </section>
+
+  <div class="mock" data-req="REQ-ZTA_C0130-009:2,3,4,5 REQ-ZTA_C0130-015:2,3"><b>연차관리 ZTA_C0130_T_01 — 목업 확인용</b> 원본 화면에는 없음. 연차 현황관리 저장(BR-ZTA_C0130-024)·일괄 저장(BR-ZTA_C0130-030) 결과. <a class="rb" data-rb="REQ-ZTA_C0130-009">REQ-009</a><a class="rb" data-rb="REQ-ZTA_C0130-015">REQ-015</a>
+    <div id="dbLog" class="hint" style="margin:4px 0"></div>
+    <table class="g"><thead><tr><th>회사</th><th>년도</th><th>사번</th><th>사원 ID</th><th>연차기준일자</th><th>시작일</th><th>종료일</th><th>기본</th><th>가산</th><th>발생조정</th><th>선사용</th><th>발생일수(저장값)</th><th>사용조정</th><th>경로변경</th><th>의무기준</th><th>최종 업데이트한 사람</th><th>최종 업데이트</th></tr></thead><tbody id="dbBody"></tbody></table></div>
+</div>
+
+<div class="pop" id="popCo"><div class="pbox"><b style="font-size:14px">회사 찾기</b> <a class="rb" data-rb="REQ-ZTA_C0130-003">REQ-003</a> <span class="fname">ZT_COMPANY_V (OPRID = 로그인 사용자)</span>
+  <table class="g" data-req="REQ-ZTA_C0130-003:4"><thead><tr><th>회사</th><th>설명</th></tr></thead><tbody id="pCoBody"></tbody></table>
+  <div class="toolbar"><button data-close>취소</button></div></div></div>
+<div class="pop" id="popBu"><div class="pbox"><b style="font-size:14px">비즈니스 단위 찾기</b> <a class="rb" data-rb="REQ-ZTA_C0130-003">REQ-003</a> <span class="fname">ZBA_COMBU_V (OPRID·COMPANY)</span>
+  <table class="g" data-req="REQ-ZTA_C0130-003:5"><thead><tr><th>비즈니스 단위</th><th>설명</th></tr></thead><tbody id="pBuBody"></tbody></table>
+  <div class="toolbar"><button data-close>취소</button></div></div></div>
+<div class="pop" id="popEmp"><div class="pbox"><b style="font-size:14px">사번 찾기</b> <a class="rb" data-rb="REQ-ZTA_C0130-006">REQ-006</a> <span class="fname">%EDITTABLE = DERIVED.EDITTABLE</span>
+  <p class="hint" id="pEmpView"></p>
+  <table class="g" data-req="REQ-ZTA_C0130-006:5"><thead><tr><th>사번</th><th>성명</th><th>부서</th><th>비즈니스 단위</th></tr></thead><tbody id="pEmpBody"></tbody></table>
+  <div class="toolbar"><button data-close>취소</button></div></div></div>
+<div class="pop" id="popUp"><div class="pbox" style="max-width:760px" data-req="REQ-ZTA_C0130-013:6"><b style="font-size:14px">파일 올리기</b> <a class="rb" data-rb="REQ-ZTA_C0130-013">REQ-013</a>
+  <p class="hint">(목업 설명) 원본은 첨부 업로드 창(FN-ZZ_COMMON.UTIL.File-fileUploadCJ)에서 파일을 고르고 CP949 로 읽습니다. 목업은 파일 내용(탭 구분, 첫 줄 = 제목)을 붙여 넣습니다. 열: 사번 · 전년도결근일수 · 전년도휴직일수 · 기본연차 · 가산연차 · 발생조정일수 · 선사용연차 · 사용조정일수 · 경로변경사용분 · 의무사용기준일수. 탭은 \t 로 적어도 됩니다.</p>
+  <textarea id="upText" rows="10"></textarea>
+  <div class="row"><label><input type="checkbox" id="upFail"> (목업 설명) 처리 중 오류 흉내 — 줄</label><input type="text" class="w60 num" id="upFailLine" value="3"></div>
+  <div class="toolbar"><button id="upOk">업로드</button><button data-close>취소</button></div></div></div>
+
+<aside class="rpanel" id="rpanel" aria-label="요구사항">
+  <div class="rp-head">
+    <div class="t"><b>요구사항 (requirements.json)</b><button id="rpClose" type="button" title="닫기">✕</button></div>
+    <div class="rp-hint">요구사항을 누르면 해당 화면 영역에 초점을 맞추고 상세 내용을 펼칩니다. 화면 위치를 누르면 그 화면(팝업)으로 갑니다.</div>
+  </div>
+  <div id="rpList"></div>
+</aside>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  let ready = false, refresh = function () {};
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const PFX = 'ZTA_C0130';
+  // ---- 요구사항 (requirements.json 그대로 — 스크립트로 주입) ----
+  const REQS = [
+    {
+      "id": "REQ-ZTA_C0130-001",
+      "title": "연차 현황관리 화면 열기",
+      "statement": "사용자는 메뉴에서 검색 화면 없이 연차 현황관리 화면을 바로 열 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)·제일제당RPA(R_MENU_A_B10_010)",
+      "acceptance_criteria": [
+        "메뉴(근태관리 > 휴가근태 > 생성관리 > 연차 현황관리, 또는 연차 현황관리(보안))를 누르면 검색 화면 없이 '연차 현황관리' 탭이 바로 열린다(PeopleSoft 표준 동작).",
+        "화면 위쪽에 탭 '연차 현황관리'·'연차 일괄로드' 가 있고, 화면 아래에도 두 탭 이름 링크가 있다.",
+        "본문에는 위에서부터 조회 조건(회사·비즈니스 단위·부서·하위부서포함·사번 / 년도·자격 그룹·재직 여부)과 '검색' 버튼, 사원 인적사항 영역(처음엔 숨김), '연차관리' 그리드, '저장' 버튼이 보인다.",
+        "처음 열면 연차관리 그리드에 값이 비어 있거나 0 인 행 하나가 있다.",
+        "연차관리 그리드에 행 추가(+)·삭제(−) 버튼이 보인다.",
+        "화면 아래에 표준 툴바(저장·돌아가기·이전/다음) 버튼은 보이지 않는다(필요 여부는 현업 확인)."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-001"
+      ],
+      "priority": "필수",
+      "notes": "검색 레코드 INSTALLATION(검색키 없음), 페이지 ZTA_C0130_STP_01, 스크린샷 ZTA_C0130_1.png·ZTA_C0130_2.png. 툴바 설정 source/ghr/csv/03_ps_pnlgrpdefn.csv SHOWTBAR=1, TBARBTNS=65538, INCLNAVIGATION=1, FORCESEARCH=0, DISABLESAVE=0(값만, 툴바 유무는 스크린샷 기준, OQ-ZTA_C0130-08). 처음 행은 Q-ZTA_C0130-001."
+    },
+    {
+      "id": "REQ-ZTA_C0130-002",
+      "title": "조회 조건 기본값",
+      "statement": "시스템은 화면을 열 때 회사·비즈니스 단위·년도 조회 조건을 기본값으로 채워야 한다.",
+      "actor": "시스템",
+      "acceptance_criteria": [
+        "회사·비즈니스 단위에 로그인 사용자의 HR 기본값이 들어간다.",
+        "년도에 기준값 테이블(번호 252212, 키 ZTA_C0130)에 등록된 년도가 들어간다."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-002",
+        "BR-ZTA_C0130-003"
+      ],
+      "priority": "중요",
+      "notes": "레코드 ZTA_C0130_DW 기본값 OPR_DEF_TBL_HR, Q-ZTA_C0130-002. 스크린샷 ZTA_C0130_1.png 에 회사·비즈니스 단위·년도가 채워져 있다."
+    },
+    {
+      "id": "REQ-ZTA_C0130-003",
+      "title": "조회 조건 입력",
+      "statement": "사용자는 회사·비즈니스 단위·부서·사번·년도·자격 그룹·재직 여부와 하위부서포함으로 조회 대상을 정할 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)·제일제당RPA(R_MENU_A_B10_010)",
+      "acceptance_criteria": [
+        "회사·비즈니스 단위·년도는 필수('*')이며, 값을 지우면 그 필드에 오류가 표시된다.",
+        "회사를 바꾸면 그 회사에서 쓸 수 있는 비즈니스 단위가 하나면 자동으로 채워지고 둘 이상이면 비워진다. 부서·사원이 비워지고 연차관리 목록이 지워진다.",
+        "비즈니스 단위를 바꾸면 부서·사원이 비워지고, 부서를 바꾸면 사원이 비워지며 둘 다 연차관리 목록이 지워진다.",
+        "회사 찾기 팝업에는 로그인 사용자에게 허용된 회사만 나온다.",
+        "비즈니스 단위 찾기 팝업에는 로그인 사용자·선택 회사의 비즈니스 단위만 나온다.",
+        "부서·사번·자격 그룹은 찾기 팝업으로 고르고 옆 칸에 이름이 보인다. 재직 여부는 목록(활성·비활성)에서 고른다.",
+        "사원 인적사항 영역은 열 때와 회사·비즈니스 단위·부서를 바꿀 때 숨겨진다(사번을 골라도 나타나지 않음 — 현업 확인)."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-004",
+        "BR-ZTA_C0130-005",
+        "BR-ZTA_C0130-006",
+        "BR-ZTA_C0130-008",
+        "BR-ZTA_C0130-009"
+      ],
+      "priority": "필수",
+      "notes": "페이지 ZTA_C0130_STP_01 조회 조건, 프롬프트 ZT_COMPANY_V·ZBA_COMBU_V·ZZ_DEPT_SCH_V_5·ZTS_E_CB_DV2·ZT_ELIG_GRP_V, 보조 페이지 ZZ_EMPL_SUB_01. OQ-ZTA_C0130-01."
+    },
+    {
+      "id": "REQ-ZTA_C0130-004",
+      "title": "연차 현황 조회",
+      "statement": "사용자는 '검색' 을 눌러 조건에 맞는 사원의 그 해 연차 현황을 볼 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)·제일제당RPA(R_MENU_A_B10_010)",
+      "acceptance_criteria": [
+        "'검색' 을 누르면 회사·비즈니스 단위·년도가 비었는지 확인하고, 목록을 비운 뒤 다시 조회한다.",
+        "부서·사번·자격 그룹·재직 여부는 입력하면 같은 값만, 비우면 전체가 대상이다.",
+        "하위부서포함을 체크하고 부서를 넣으면 그 부서와 하위 부서 사원이 함께 나온다.",
+        "로그인 사용자의 부서 보안 범위 안의 사원만 나온다.",
+        "그 해 연차가 생성된 사원과, 연차는 없지만 그 해 연차 기간에 연차를 쓴 재직 사원(발생 0, 사용 실적만)이 함께 나온다(대상 기준은 현업 확인)."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-004",
+        "BR-ZTA_C0130-009",
+        "BR-ZTA_C0130-010",
+        "BR-ZTA_C0130-011"
+      ],
+      "priority": "필수",
+      "notes": "페이지 ZTA_C0130_STP_01 '검색'(ZZ_BTN_01), Q-ZTA_C0130-006(SQL.ZTA_C0130_R_02/R_02_B). OQ-ZTA_C0130-02."
+    },
+    {
+      "id": "REQ-ZTA_C0130-005",
+      "title": "연차 현황 목록 표시 항목",
+      "statement": "시스템은 연차관리 목록을 기준·발생·사용·잔여 탭으로 나눠 사원별 연차 일수를 계산해 보여야 한다.",
+      "actor": "시스템",
+      "acceptance_criteria": [
+        "모든 탭에 사번·성명·부서명·직급이 보이고, 한 번에 20행이 보이며 열 제목으로 정렬할 수 있다.",
+        "기준 탭: 재직 여부·자격그룹·당사입사일·그룹입사일·연차기산일자·시작일·종료일·표준 근무 시간(주 표준시간 − 단축근무시간×5)·표준근무시간(일)(÷5)·전년도결근일수·전년도휴직일수·제외일수(결근+휴직)가 보인다. 입사일은 입사 일자 기록이 있으면 그 값, 없으면 인사 정보 값이다.",
+        "발생 탭: 기본연차·가산연차·발생조정일수·선사용연차·신입연차(올해)·신입연차(내년)·발생일수 합계(일)(저장된 발생일수+신입연차 올해·내년)·발생시간 합계(시간)(일수×(8−단축근무시간))가 보인다.",
+        "사용 탭: 사용일수(연차 건수×1회 사용일수)·반연차사용일수·반반연차사용일수·시간단위 사용(일)·시간단위 신청(시간)·사용조정일수·경로변경사용분·사용시간 합계(일)(모두 더해 소수 4자리 반올림)·사용시간 합계(시간)가 보인다.",
+        "잔여 탭: 의무사용기준일수·잔여일수(발생−사용)·의무사용일수·신입연차(내년)이월·선사용(내년 발생분 차감)·지급일수 합계(일)·지급시간 합계(시간)·최종 업데이트한 사람·최종 업데이트가 보인다. 선사용 포함 회사는 의무사용 기준에서 선사용연차를 뺀다.",
+        "기준 탭 '연차기산일자', 잔여 탭 '의무사용일수' 열 제목은 메시지 문구로 표시된다."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-012",
+        "BR-ZTA_C0130-013",
+        "BR-ZTA_C0130-014",
+        "BR-ZTA_C0130-015",
+        "BR-ZTA_C0130-016",
+        "BR-ZTA_C0130-017",
+        "BR-ZTA_C0130-022"
+      ],
+      "priority": "필수",
+      "notes": "그리드 ZTA_C0130_DV_01(그리드 탭 기준·발생·사용·잔여), 스크린샷 ZTA_C0130_1~4.png, Q-ZTA_C0130-006, 뷰 ZTA_C0130_V_01·V_03."
+    },
+    {
+      "id": "REQ-ZTA_C0130-006",
+      "title": "사원 행 추가",
+      "statement": "사용자는 연차관리 목록에 행을 추가하고 사번을 넣어 그 사원의 연차 기준값을 자동으로 채울 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)·제일제당RPA(R_MENU_A_B10_010)",
+      "acceptance_criteria": [
+        "행 추가(+)로 새 행을 만들고 사번 칸에 사번을 입력하거나 돋보기로 찾아 고를 수 있다.",
+        "사번을 넣으면 입사일·연차기산일자(없으면 그룹입사일)·연차 기간 시작·종료일·사용일수·반연차·반반연차·시간단위 신청(시간)·자격그룹이 채워진다.",
+        "선사용연차는 전년도 사용 합계+사용조정+경로변경−전년도 발생이 0보다 크면 그 값(최대 25일), 아니면 0으로 채워진다.",
+        "채운 값으로 사용 합계·발생·잔여·의무사용·지급 일수가 계산된다.",
+        "사번 찾기 팝업에는 조회 조건에 부서가 있으면 그 부서 기준 사원 목록, 없으면 비즈니스 단위 기준 사원 목록이 나온다."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-007",
+        "BR-ZTA_C0130-017",
+        "BR-ZTA_C0130-018",
+        "BR-ZTA_C0130-019"
+      ],
+      "priority": "중요",
+      "notes": "그리드 사번(ZZ_EMP2_V.ZZ_EMPNO, 검색사원ID 관련 입력), Q-ZTA_C0130-007·008·009. OQ-ZTA_C0130-05. 인수 조건 #1~#4 본문 그리드, #5 사번 찾기 팝업(%EDITTABLE ZZ_EMP2_BUD_V/ZZ_EMP2_BU_V)."
+    },
+    {
+      "id": "REQ-ZTA_C0130-007",
+      "title": "연차 값 수정과 재계산",
+      "statement": "사용자는 기본연차·가산연차·발생조정일수·선사용연차·사용조정일수·경로변경사용분·의무사용기준일수를 고칠 수 있고, 시스템은 관련 합계를 다시 계산해야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)·제일제당RPA(R_MENU_A_B10_010)",
+      "acceptance_criteria": [
+        "발생 탭의 기본연차·가산연차·발생조정일수·선사용연차, 사용 탭의 사용조정일수·경로변경사용분, 잔여 탭의 의무사용기준일수만 입력할 수 있다.",
+        "발생 값을 고치면 발생일수 합계(일·시간)·잔여·의무사용·지급 일수·선사용(내년분)이 다시 계산된다.",
+        "사용조정일수·경로변경사용분을 고치면 사용시간 합계(일·시간)와 잔여·의무사용·지급 일수가 다시 계산된다.",
+        "의무사용기준일수를 고치면 의무사용일수·지급일수·선사용(내년분)이 다시 계산된다.",
+        "고칠 때 계산은 조회 때 계산과 기준이 다를 수 있다(하루 8시간 기준 등 — 현업 확인)."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-014",
+        "BR-ZTA_C0130-020",
+        "BR-ZTA_C0130-021"
+      ],
+      "priority": "필수",
+      "notes": "그리드 ZTA_C0130_DV_01 편집 열, 스크린샷 ZTA_C0130_2~4.png, Q-ZTA_C0130-010. OQ-ZTA_C0130-04."
+    },
+    {
+      "id": "REQ-ZTA_C0130-008",
+      "title": "저장 권한",
+      "statement": "시스템은 '추가' 권한이 없는 사용자에게 연차 현황관리 '저장' 버튼을 막아야 한다.",
+      "actor": "시스템",
+      "acceptance_criteria": [
+        "현재 메뉴·화면에 '추가' 권한이 없는 사용자는 '저장' 버튼이 비활성으로 보인다.",
+        "이 제어는 연차 현황관리 탭에만 적용된다(연차 일괄로드 탭 버튼 제어는 현업 확인)."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-023"
+      ],
+      "priority": "중요",
+      "notes": "ZZ_COMMON:USER:Role IsDisplayOnly, OQ-ZTA_C0130-06."
+    },
+    {
+      "id": "REQ-ZTA_C0130-009",
+      "title": "연차 현황 저장",
+      "statement": "사용자는 '저장' 을 눌러 고치거나 추가·삭제한 행을 연차관리 자료에 반영할 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)·제일제당RPA(R_MENU_A_B10_010)",
+      "acceptance_criteria": [
+        "'저장' 을 누르면 묻지 않고 사번이 있는 행 중 고친·추가한·삭제한 행만 저장한다.",
+        "이미 생성된 연차 행을 고치면 그 행이 수정되고 최종 업데이트한 사람·일시가 바뀐다.",
+        "연차 미생성 행을 고치거나 새 행을 추가하면 같은 년도·회사·사번 자료가 없을 때 새로 등록된다.",
+        "삭제(−)한 행은 연차관리 자료에서 지워진다.",
+        "저장되는 발생일수는 발생일수 합계에서 신입연차(올해·내년)를 뺀 값이다.",
+        "저장 후 완료 메시지나 목록 다시 조회는 없다(현업 확인)."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-024"
+      ],
+      "priority": "필수",
+      "notes": "'저장'(ZZ_BTN_02), 테이블 ZTA_C0130_T_01, Q-ZTA_C0130-011~014. OQ-ZTA_C0130-09."
+    },
+    {
+      "id": "REQ-ZTA_C0130-010",
+      "title": "연차 일괄로드 탭 열기",
+      "statement": "사용자는 '연차 일괄로드' 탭에서 업로드 조건·결과·버튼을 볼 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)",
+      "acceptance_criteria": [
+        "'연차 일괄로드' 탭(또는 아래 링크)을 누르면 회사·회사명·년도, '템플릿 다운로드' 링크, 상태 문구 칸, '업로드 결과'(Total 건수·성공 건수·실패 건수), 등록/삭제 선택, '처리결과'(처리상태·오류메세지·사원 ID·사번·기준년도) 목록, '업로드'·'저장' 버튼이 보인다.",
+        "회사·년도는 연차 현황관리 탭과 같은 값을 쓴다.",
+        "처음 열면 업로드 결과 건수는 0, 처리결과 목록은 빈 행이다.",
+        "등록/삭제 선택 상자 제목이 'tempno' 로 보인다(현업 확인)."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-001"
+      ],
+      "priority": "필수",
+      "notes": "페이지 ZTA_C0130_STP_02, 스크린샷 ZTA_C0130_5.png, Q-ZTA_C0130-021·022. OQ-ZTA_C0130-07."
+    },
+    {
+      "id": "REQ-ZTA_C0130-011",
+      "title": "일괄로드 처리 구분 기본값",
+      "statement": "시스템은 일괄로드 처리 구분을 '등록' 으로 시작해야 한다.",
+      "actor": "시스템",
+      "acceptance_criteria": [
+        "화면을 열면 '등록' 이 선택돼 있다."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-025"
+      ],
+      "priority": "중요",
+      "notes": "ZTA_C0130_DW.ZZ_GD_YN 라디오, 스크린샷 ZTA_C0130_5.png."
+    },
+    {
+      "id": "REQ-ZTA_C0130-012",
+      "title": "업로드 템플릿 다운로드",
+      "statement": "사용자는 '템플릿 다운로드' 로 업로드 양식을 내려받을 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)",
+      "acceptance_criteria": [
+        "'템플릿 다운로드' 를 누르면 템플릿 파일을 내려받는다(어느 파일인지는 현업 확인)."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-026"
+      ],
+      "priority": "중요",
+      "notes": "ZZ_BTN_05, ZBB_C0640_DW.FUNCLIB(원천에 없음). OQ-ZTA_C0130-03."
+    },
+    {
+      "id": "REQ-ZTA_C0130-013",
+      "title": "연차 파일 업로드와 검증",
+      "statement": "사용자는 탭 구분 텍스트 파일을 올려 연차 자료를 임시로 불러오고 검증 결과를 받을 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)",
+      "acceptance_criteria": [
+        "회사·년도가 비어 있으면 업로드 전에 오류가 표시된다.",
+        "'업로드' 를 누르면 파일 올리기 창이 열린다.",
+        "이전에 내가 올린 임시 자료는 지워지고, 회사·년도는 화면 값, 발생일수는 기본+가산+발생조정−선사용으로 채워진다. 연차 기간과 연차기준일자는 사원 기준으로 채워진다.",
+        "파일을 읽다 오류가 나면 'Error Line : 줄번호 , 오류내용' 메시지가 뜨고 중단된다.",
+        "사원이 없으면 '해당 사원이 존재하지 않습니다.', 등록인데 그 년도 연차가 있으면 '해당 년도에 생성된 연차가 존재합니다.', 파일 안에 같은 사번이 두 번 이상이면 '업로드 파일 내에 중복된 값이 존재합니다.', 삭제인데 대상이 없으면 '삭제할 조건에 맞는 데이터가 없습니다.' 로 실패 처리된다.",
+        "파일 올리기 창에서 올린 파일은 첫 줄(제목)을 빼고 줄마다 사번·전년도결근일수·전년도휴직일수·기본연차·가산연차·발생조정일수·선사용연차·사용조정일수·경로변경사용분·의무사용기준일수 순서의 탭 구분 값으로 읽힌다."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-004",
+        "BR-ZTA_C0130-027",
+        "BR-ZTA_C0130-028"
+      ],
+      "priority": "필수",
+      "notes": "'업로드'(ZZ_BTN_03), 임시 테이블 ZTA_C0130_TP_01, 메시지 22600,91·524·519·518, Q-ZTA_C0130-015~018·030~034. 인수 조건 #1·#2·#3·#4·#5 본문, #6 파일 올리기 창(공통 업로드 창)."
+    },
+    {
+      "id": "REQ-ZTA_C0130-014",
+      "title": "업로드 결과 확인",
+      "statement": "사용자는 업로드·저장 뒤 건수와 실패 행을 확인할 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)",
+      "acceptance_criteria": [
+        "업로드 결과 행에 내가 올린 그 회사·년도 자료의 Total 건수·성공 건수·실패 건수가 보인다.",
+        "처리결과 목록에는 실패한 행만 처리상태·오류메세지·사원 ID·사번·기준년도와 함께 보인다.",
+        "상태 칸에 'Total : n, Success : n, Fail : n' 이 보인다."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-029"
+      ],
+      "priority": "중요",
+      "notes": "그리드 ZTA_C0130_DV_02·ZTA_C0130_TP_01, 메시지 21000,77, Q-ZTA_C0130-023·027·028. OQ-ZTA_C0130-07."
+    },
+    {
+      "id": "REQ-ZTA_C0130-015",
+      "title": "일괄 반영 저장(등록·삭제)",
+      "statement": "사용자는 업로드 성공 행을 연차관리 자료에 등록하거나 삭제할 수 있어야 한다.",
+      "actor": "사업장 시간근태담당자(R_MENU_T_010)·계열사 휴가담당자(R_MENU_T_040)·계열사 휴가담당자(조회전용)(R_MENU_T_041)·그룹 (근태)시스템관리자(R_MENU_T_100)·계열사휴가담당자(R_MENU_T_CHN_010)·근태담당자(일본)(R_MENU_T_JPN_010)·Attendance Management(MYS/SGP/THA)(R_MENU_T_MYS_010·R_MENU_T_SGP_010·R_MENU_T_THA_010)·근태담당자(필리핀)(R_MENU_T_PHL_010)·베트남 근태담당자(R_MENU_T_VNM_010)·Annual leave management(R_MENU_T_VNM_020)·복리후생 운영담당자(R_MGR_B_010)·제지급/보상/정산 운영담당자(R_MGR_P_010)·제지급 부문리더(R_MGR_P_100)·경영진단 감사권한(ENM 전용)(R_MENU_B_J10_010)",
+      "acceptance_criteria": [
+        "'저장' 을 누르면 등록이면 '성공 n 건의 데이타를 DB 에 저장 하시겠습니까?', 삭제면 '성공 n 건의 데이타를 DB 에 삭제 하시겠습니까?' 를 묻고, 취소하면 아무것도 하지 않는다.",
+        "등록이면 성공 행마다 연차관리 자료를 새로 만들되, 그 사이 같은 년도 자료가 생겼으면 '해당 년도에 생성된 연차가 존재합니다.' 로 실패 처리한다.",
+        "삭제면 성공 행과 같은 회사·년도·사번·사원 연차관리 자료를 지운다.",
+        "반영한 행은 임시 자료에서 지워지고, 1건 이상 반영하면 '정상적으로 저장되었습니다.' 가 뜬 뒤 결과가 다시 조회된다.",
+        "처리 중 오류가 나면 'Error Line : 건수 , 오류내용' 메시지가 뜨고 중단된다."
+      ],
+      "rules": [
+        "BR-ZTA_C0130-030"
+      ],
+      "priority": "필수",
+      "notes": "'저장'(ZZ_BTN_04), 메시지 21000,75·21000,95·22600,524·22900,31, Q-ZTA_C0130-019·020·024~026·032."
+    }
+  ];
+  const BR_TITLES = {
+    "BR-ZTA_C0130-001": "검색 화면 없이 두 탭 화면이 바로 열린다",
+    "BR-ZTA_C0130-002": "회사·비즈니스 단위 기본값은 사용자 HR 기본값",
+    "BR-ZTA_C0130-003": "년도 기본값은 기준값 테이블의 값",
+    "BR-ZTA_C0130-004": "회사·비즈니스 단위·년도는 필수(업로드는 회사·년도)",
+    "BR-ZTA_C0130-005": "회사를 바꾸면 비즈니스 단위를 자동으로 정하고 하위 조건을 비운다",
+    "BR-ZTA_C0130-006": "비즈니스 단위·부서를 바꾸면 하위 조건과 결과를 비운다",
+    "BR-ZTA_C0130-007": "그리드 사번 찾기 대상은 부서 조건에 따라 다르다",
+    "BR-ZTA_C0130-008": "사원 인적사항 영역은 조회 조건 검색사원ID 가 있을 때만 보인다",
+    "BR-ZTA_C0130-009": "조회 대상 회사·비즈니스 단위·부서는 사용자 보안 범위로 제한",
+    "BR-ZTA_C0130-010": "하위부서포함 조회",
+    "BR-ZTA_C0130-011": "조회 대상: 생성된 연차 행과 연차 미생성 사용 실적 행",
+    "BR-ZTA_C0130-012": "조회 시 발생일수 = 연차관리 발생일수 + 신입연차(올해) + 신입연차(내년)",
+    "BR-ZTA_C0130-013": "조회 시 사용일수 집계",
+    "BR-ZTA_C0130-014": "선사용 포함 회사는 의무사용기준일수에서 선사용연차를 뺀다",
+    "BR-ZTA_C0130-015": "조회 시 잔여·의무사용·선사용(내년분)·지급일수",
+    "BR-ZTA_C0130-016": "조회 시 시간 환산·표준 근무시간",
+    "BR-ZTA_C0130-017": "입사일·연차기산 일자 출처",
+    "BR-ZTA_C0130-018": "행 추가 시 사원 기준값 자동 채움",
+    "BR-ZTA_C0130-019": "행 추가 시 선사용연차 자동 계산(최대 25일)",
+    "BR-ZTA_C0130-020": "행 값 수정 시 사용 합계·발생·잔여 재계산",
+    "BR-ZTA_C0130-021": "행 값 수정 시 의무사용·지급·선사용(내년분) 재계산",
+    "BR-ZTA_C0130-022": "그리드 열 라벨 변경",
+    "BR-ZTA_C0130-023": "'추가' 권한이 없으면 연차 현황관리 '저장' 버튼 비활성",
+    "BR-ZTA_C0130-024": "연차 현황관리 저장 — 바뀐·새·삭제 행 반영",
+    "BR-ZTA_C0130-025": "일괄로드 처리 구분 기본값은 '등록'",
+    "BR-ZTA_C0130-026": "템플릿 다운로드는 다른 화면 라이브러리 함수를 부른다",
+    "BR-ZTA_C0130-027": "업로드 파일을 사용자별 임시 테이블에 적재",
+    "BR-ZTA_C0130-028": "업로드 행 검증",
+    "BR-ZTA_C0130-029": "업로드 결과 표시 — 건수와 실패 행",
+    "BR-ZTA_C0130-030": "일괄 저장 — 성공 행 등록 또는 삭제"
+  };
+  const OQS = {
+    "OQ-ZTA_C0130-01": "조회 조건 아래 사원 인적사항 영역을 새 화면에서 보여 줘야 하나요?",
+    "OQ-ZTA_C0130-02": "연차가 아직 만들어지지 않은 사원이 조회될 때(사용 실적만 있는 행) 어떤 사원이 나와야 하나요?",
+    "OQ-ZTA_C0130-03": "'템플릿 다운로드' 버튼으로 내려받는 파일은 무엇이어야 하나요?",
+    "OQ-ZTA_C0130-04": "조회할 때와 그리드에서 값을 고칠 때 합계 계산이 다르면 어느 쪽 계산이 맞나요?",
+    "OQ-ZTA_C0130-05": "사번을 넣어 행을 추가할 때 자동으로 채우는 선사용연차의 최대 25일 한도는 모든 회사에 똑같이 적용하나요?",
+    "OQ-ZTA_C0130-06": "연차 일괄로드 탭의 업로드·저장도 조회 전용 사용자에게 막아야 하나요?",
+    "OQ-ZTA_C0130-07": "연차 일괄로드 탭의 처리 구분 상자 제목('tempno')과 처리결과 목록(실패 행만 표시)을 새 화면에서 어떻게 보여 줄까요?",
+    "OQ-ZTA_C0130-08": "새 화면에 표준 툴바(저장·이전/다음 등)가 필요한가요?",
+    "OQ-ZTA_C0130-09": "연차 현황관리 탭에서 '저장' 을 누른 뒤 확인 메시지·완료 메시지와 목록 다시 조회가 필요한가요?"
+  };
+  $('optFname').onchange = e => document.body.classList.toggle('show-fname', e.target.checked);
+
+  /* ---------- 샘플 데이터 (전부 가짜) ---------- */
+  const Y = new Date().getFullYear();
+  const pad = n => String(n).padStart(2, '0');
+  const now = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+  const r4 = x => Math.round(x * 10000) / 10000;
+  const f4 = x => (Number(x) || 0).toFixed(4), f2 = x => (Number(x) || 0).toFixed(2);
+  const ME = 'SAMPLEOPR';
+  // ZT_COMPANY_V (Q-040) / ZBA_COMBU_V (Q-003·004·041)
+  const COS = { E10: '샘플회사E', C01: '샘플회사C' };
+  const BUS = { E10: [['E10BU', '샘플BU-E']], C01: [['C01A', '샘플BU-C1'], ['C01B', '샘플BU-C2']] };
+  const DEF = { co: 'E10', bu: 'E10BU' };                                   // OPR_DEF_TBL_HR (BR-002)
+  const DEPTS = { D100: { nm: '샘플부서1', parent: '' }, D110: { nm: '샘플부서1-1', parent: 'D100' }, D900: { nm: '샘플부서9', parent: '' } };
+  const MY_DEPTS = ['D100', 'D110'];                                        // ZZ_DEPT_C_QRY: 로그인 사용자 부서 보안 (BR-009)
+  const PRE_IN = ['E10'];                                                   // ZTA_C0130_V_03 선사용 포함 회사 (BR-014)
+  const USE_DAY = { A01: 1, A02: 0.5, AA9: 0.25 };                          // ZTA_C0050_T_01 1회 사용일수 (샘플)
+  const ELIG = { 'KR A': '사무직(샘플)', 'KR B': '현장직(샘플)' };
+  // ZZ_EMPLOYEES·ZCG_C1790·ZTA_C0360(사용 건수)·ZTS_C0900(단축)·ZTA_C0135(신입연차)·JOB(주 표준시간) — 전부 샘플
+  const EMPS = {
+    E1001: { co: 'E10', bu: 'E10BU', dept: 'D100', nm: '샘플사원A', id: 'S00001', rcd: 0, grade: 'G4', hr: 'A', elig: 'KR A', rehire: '2015-03-02', hire: '2014-01-02', d005: '', week: 40, short: 1, cur: 0, nex: 0, a01: 5, a02: 2, aa9: 1, hrs: 6, prevUse: 16, prev: { ent: 15, adj: 0, path: 0 } },
+    E1002: { co: 'E10', bu: 'E10BU', dept: 'D110', nm: '샘플사원B', id: 'S00002', rcd: 0, grade: 'G2', hr: 'A', elig: 'KR B', rehire: (Y - 1) + '-07-01', hire: (Y - 1) + '-07-01', d005: (Y - 1) + '-07-01', week: 40, short: 0, cur: 1, nex: 2, a01: 3, a02: 0, aa9: 0, hrs: 0, prevUse: 0, prev: null },
+    E1003: { co: 'E10', bu: 'E10BU', dept: 'D100', nm: '샘플사원C', id: 'S00003', rcd: 0, grade: 'G3', hr: 'A', elig: 'KR A', rehire: '2020-02-03', hire: '2020-02-03', d005: '2020-02-03', week: 40, short: 0, cur: 0, nex: 0, a01: 2, a02: 1, aa9: 0, hrs: 4, prevUse: 0, prev: null },
+    E1004: { co: 'E10', bu: 'E10BU', dept: 'D110', nm: '샘플사원D', id: 'S00004', rcd: 0, grade: 'G5', hr: 'A', elig: 'KR A', rehire: '2010-05-06', hire: '2009-01-05', d005: '', week: 40, short: 0, cur: 0, nex: 0, a01: 1, a02: 0, aa9: 0, hrs: 0, prevUse: 45, prev: { ent: 15, adj: 0, path: 0 } },
+    E1005: { co: 'E10', bu: 'E10BU', dept: 'D900', nm: '샘플사원E', id: 'S00005', rcd: 0, grade: 'G3', hr: 'A', elig: 'KR A', rehire: '2018-01-02', hire: '2018-01-02', d005: '', week: 40, short: 0, cur: 0, nex: 0, a01: 1, a02: 0, aa9: 0, hrs: 0, prevUse: 0, prev: null },
+    C2001: { co: 'C01', bu: 'C01A', dept: 'D100', nm: '샘플사원F', id: 'S00011', rcd: 0, grade: 'G3', hr: 'A', elig: 'KR A', rehire: '2019-01-02', hire: '2019-01-02', d005: '', week: 40, short: 0, cur: 0, nex: 0, a01: 0, a02: 0, aa9: 0, hrs: 0, prevUse: 0, prev: null }
+  };
+  const PERIOD = () => [Y + '-01-01', Y + '-12-31'];                         // ZTA_C0010_T_01 (샘플: 모든 자격그룹 같은 기간)
+  // ZTA_C0130_T_01 연차관리 (샘플)
+  let DB = [
+    { co: 'E10', yr: Y, no: 'E1001', id: 'S00001', base: '2014-01-02', sd: Y + '-01-01', ed: Y + '-12-31', ab: 0, lv: 0, e1: 15, e2: 2, e3: 0, capa: 0, pre: 1, ent: 16, adj: 0.5, path: 0, duty: 10, updBy: 'SAMPLEOPR2', upd: Y + '-01-15 09:00' },
+    { co: 'E10', yr: Y, no: 'E1002', id: 'S00002', base: (Y - 1) + '-07-01', sd: Y + '-01-01', ed: Y + '-12-31', ab: 1, lv: 0, e1: 11, e2: 0, e3: 0, capa: 0, pre: 0, ent: 11, adj: 0, path: 0, duty: 5, updBy: 'SAMPLEOPR2', upd: Y + '-01-15 09:00' },
+    { co: 'E10', yr: Y, no: 'E1005', id: 'S00005', base: '2018-01-02', sd: Y + '-01-01', ed: Y + '-12-31', ab: 0, lv: 0, e1: 15, e2: 0, e3: 0, capa: 0, pre: 0, ent: 15, adj: 0, path: 0, duty: 10, updBy: 'SAMPLEOPR2', upd: Y + '-01-15 09:00' }
+  ];
+  const yearDefault = String(Y);                                           // GP_BRACKET_DTL PIN 252212 / ZTA_C0130 (Q-002) — 샘플 값
+
+  /* ---------- 상태 ---------- */
+  let ROWS = [], G_YEAR = yearDefault, curGt = 'gtBase', TP = [], SUM = null, ERRV = [];
+  const st = (id) => $(id).value.trim();
+  function showMsg(n, kind, text) { const m = $('msg' + n); m.className = 'msg ' + (kind || ''); m.textContent = text || ''; refresh(); }
+  function bad(id, on) { $(id).classList.toggle('bad', !!on); }
+
+  /* ---------- 계산 — 조회 SQL (BR-012~016, Q-006) ---------- */
+  function sqlCalcC(d, e) {
+    const sh = e.short, use = r4(e.a01 * USE_DAY.A01 + e.a02 * USE_DAY.A02 + e.aa9 * USE_DAY.AA9 + e.hrs / (8 - sh) + d.adj + d.path);
+    const ent = d.ent + e.cur + e.nex, cal = PRE_IN.includes(d.co) ? d.duty - d.pre : d.duty, gap = Math.max(cal - use, 0);
+    const oblig = cal >= ent ? Math.max(ent - use, 0) : Math.max(cal - use, 0);
+    const pay = Math.max((ent - use - e.nex) - gap, 0);
+    const std = e.week - sh * 5;
+    return { flag: 'C', no: d.no, id: d.id, rcd: e.rcd, emp: e, base: d.base, rehire: e.rehire, hire: e.hire, sd: d.sd, ed: d.ed, std, stdDay: std / 5, ab: d.ab, lv: d.lv,
+      e1: d.e1, e2: d.e2, e3: d.e3, capa: d.capa, pre: d.pre, cur: e.cur, nex: e.nex, aeEnt: ent, entTot: ent, entT8: ent * (8 - sh), adj: d.adj, path: d.path, duty: d.duty,
+      n011: e.a01 * USE_DAY.A01, d101: e.a02 * USE_DAY.A02, d102: e.aa9 * USE_DAY.AA9, n02201: e.hrs / (8 - sh), n022: e.hrs, use, use8: use * (8 - sh), rem: ent - use, oblig,
+      preNex: Math.max(use - (ent - e.nex) + gap, 0), pay, pay8: pay * (8 - sh), updBy: d.updBy, upd: d.upd };
+  }
+  function sqlCalcN(e, no) {
+    const [sd, ed] = PERIOD(), use = e.a01 * USE_DAY.A01 + e.a02 * USE_DAY.A02 + e.aa9 * USE_DAY.AA9 + e.hrs / 8;
+    return { flag: 'N', no, id: e.id, rcd: e.rcd, emp: e, base: e.d005, rehire: e.rehire, hire: e.hire, sd, ed, std: 0, stdDay: 0, ab: 0, lv: 0, e1: 0, e2: 0, e3: 0, capa: 0, pre: 0, cur: 0, nex: 0,
+      aeEnt: 0, entTot: 0, entT8: 0, adj: 0, path: 0, duty: 0, n011: e.a01 * USE_DAY.A01, d101: e.a02 * USE_DAY.A02, d102: e.aa9 * USE_DAY.AA9, n02201: e.hrs / 8, n022: e.hrs,
+      use, use8: use * 8, rem: -use, oblig: 0, preNex: 0, pay: 0, pay8: 0, updBy: '', upd: '' };
+  }
+  /* ---------- 계산 — 행 수정 시 fncsetvalue (BR-020·021, Q-010) ---------- */
+  function setValue(r, f) {
+    const has = (...xs) => xs.includes(f);
+    if (has('EMPNO', 'ADJ', 'PATH')) { r.use = r4(r.n011 + r.d101 + r.d102 + r.n022 / 8 + r.adj + r.path); r.use8 = r.use * r.stdDay; }
+    if (has('EMPNO', 'ENT1', 'ENT2', 'ENT3', 'PRE')) { r.aeEnt = r.e1 + r.e2 + r.e3 - r.pre; r.entTot = r.aeEnt + r.cur + r.nex; r.entT8 = r.entTot * r.stdDay; }
+    if (has('EMPNO', 'ENT1', 'ENT2', 'ENT3', 'ADJ', 'PATH', 'PRE')) r.rem = r.entTot - r.use;
+    if (has('EMPNO', 'ENT1', 'ENT2', 'ENT3', 'DUTY', 'ADJ', 'PATH', 'PRE')) {
+      const cal = PRE_IN.includes(st('cCo').toUpperCase()) ? r.duty - r.pre : r.duty;     // Q-010 (BR-014)
+      r.oblig = cal >= r.aeEnt ? (r.rem < 0 ? 0 : r.rem) : Math.max(cal - r.use, 0);
+      r.pay = Math.max(r.rem - r.oblig - r.nex, 0);
+      r.preNex = r.duty - r.use < 0 ? Math.max(r.use - (r.entTot - r.nex), 0) : Math.max(r.oblig - (r.entTot - r.nex), 0);
+    }
+  }
+  /* ---------- 행 추가 시 기준값 (BR-017·018·019, Q-007·008·009) ---------- */
+  function fillEmp(r, no) {
+    const e = EMPS[no]; if (!e) return false;
+    const [sd, ed] = PERIOD();
+    Object.assign(r, { no, id: e.id, rcd: e.rcd, emp: e, base: e.d005 || e.hire, rehire: e.rehire, hire: e.hire, sd, ed,
+      n011: e.a01 * USE_DAY.A01, d101: e.a02 * USE_DAY.A02, d102: e.aa9 * USE_DAY.AA9, n022: e.hrs, yr: G_YEAR });
+    const p = e.prev || { ent: 0, adj: 0, path: 0 }, x = e.prevUse + p.adj + p.path - p.ent;
+    r.pre = x > 0 ? Math.min(x, 25) : 0;                                                   // BR-019 최대 25 (OQ-05)
+    setValue(r, 'EMPNO');
+    return true;
+  }
+  const blankRow = () => ({ flag: '', no: '', id: '', rcd: 0, emp: null, base: '', rehire: '', hire: '', sd: '', ed: '', std: 0, stdDay: 0, ab: 0, lv: 0, e1: 0, e2: 0, e3: 0, capa: 0, pre: 0, cur: 0, nex: 0,
+    aeEnt: 0, entTot: 0, entT8: 0, adj: 0, path: 0, duty: 0, n011: 0, d101: 0, d102: 0, n02201: 0, n022: 0, use: 0, use8: 0, rem: 0, oblig: 0, preNex: 0, pay: 0, pay8: 0, updBy: '', upd: '' });
+
+  /* ---------- 그리드 그리기 ---------- */
+  const COMMON = ['*사번', '*성명', '부서명', '직급'];
+  const TABS = {
+    gtBase: [['재직 여부'], ['자격그룹'], ['당사입사일'], ['그룹입사일'], ['연차기산일자', 'REQ-ZTA_C0130-005:6'], ['시작일'], ['종료일'], ['표준 근무 시간'], ['표준근무시간(일)'], ['전년도결근일수'], ['전년도휴직일수'], ['제외일수']],
+    gtOcc: [['기본연차'], ['가산연차'], ['발생조정일수'], ['선사용연차'], ['신입연차(올해)'], ['신입연차(내년)'], ['발생일수 합계(일)'], ['발생시간 합계(시간)']],
+    gtUse: [['사용일수'], ['반연차사용일수'], ['반반연차사용일수'], ['시간단위 사용(일)'], ['시간단위 신청(시간)'], ['사용조정일수'], ['경로변경사용분'], ['사용시간 합계(일)'], ['사용시간 합계(시간)']],
+    gtRem: [['의무사용기준일수'], ['잔여일수'], ['의무사용일수', 'REQ-ZTA_C0130-005:6'], ['신입연차(내년)이월'], ['선사용(내년 발생분 차감)'], ['지급일수 합계(일)'], ['지급시간 합계(시간)'], ['최종 업데이트한 사람'], ['최종 업데이트']]
+  };
+  const ed = (i, k, v) => '<input type="text" class="edit num w60" data-i="' + i + '" data-k="' + k + '" value="' + f4(v) + '">';
+  function cellsOf(gt, r, i) {
+    const e = r.emp || {};
+    if (gt === 'gtBase') return [e.hr === 'A' ? '활성' : e.hr ? '비활성' : '', ELIG[e.elig] || '', r.rehire, r.hire, r.base, r.sd, r.ed, f2(r.std), f2(r.stdDay), r.ab, r.lv, r.ab + r.lv];
+    if (gt === 'gtOcc') return [ed(i, 'ENT1', r.e1), ed(i, 'ENT2', r.e2), ed(i, 'ENT3', r.e3), ed(i, 'PRE', r.pre), f4(r.cur), f4(r.nex), f4(r.entTot), f4(r.entT8)];
+    if (gt === 'gtUse') return [f4(r.n011), f4(r.d101), f4(r.d102), f4(r.n02201), f4(r.n022), ed(i, 'ADJ', r.adj), ed(i, 'PATH', r.path), f4(r.use), f4(r.use8)];
+    return [ed(i, 'DUTY', r.duty), f4(r.rem), f4(r.oblig), f4(r.nex), f4(r.preNex), f4(r.pay), f4(r.pay8), esc(r.updBy), esc(r.upd)];
+  }
+  function renderGrid() {
+    const vis = ROWS.filter(r => !r.del);
+    Object.keys(TABS).forEach(gt => {
+      const h = { gtBase: 'hBase', gtOcc: 'hOcc', gtUse: 'hUse', gtRem: 'hRem' }[gt], b = { gtBase: 'bBase', gtOcc: 'bOcc', gtUse: 'bUse', gtRem: 'bRem' }[gt];
+      $(h).innerHTML = '<th></th>' + COMMON.map(c => '<th>' + c.replace('*', '<b style="color:var(--req)">*</b>') + '</th>').join('') +
+        TABS[gt].map(([t, dr]) => '<th' + (dr ? ' data-req="' + dr + '"' : '') + '>' + t + '</th>').join('') + '<th></th>';
+      const rows = vis.length ? vis : [null];
+      $(b).innerHTML = rows.map((r, n) => {
+        if (!r) return '<tr><td class="rn">1</td>' + '<td></td>'.repeat(COMMON.length + TABS[gt].length) + '<td></td></tr>';
+        const i = ROWS.indexOf(r), e = r.emp || {};
+        const empCell = r.isNew && !r.no ? '<input type="text" class="w60" data-new="' + i + '"><button type="button" class="ico" data-emppop="' + i + '" title="사번 찾기 (%EDITTABLE)">🔍</button>' : esc(r.no);
+        return '<tr title="처리 순서 ' + (r.flag || '(새 행)') + '"><td class="rn">' + (n + 1) + '</td><td>' + empCell + '</td><td>' + esc(e.nm || '') + '</td><td>' + esc(DEPTS[e.dept] ? DEPTS[e.dept].nm : '') + '</td><td>' + esc(e.grade || '') + '</td>' +
+          cellsOf(gt, r, i).map(c => '<td class="' + (String(c).startsWith('<input') ? '' : 'nr') + '">' + c + '</td>').join('') +
+          '<td><button type="button" class="ico" data-del="' + i + '" title="행 삭제">−</button></td></tr>';
+      }).join('');
+    });
+    $('g1Pos').textContent = vis.length ? '1-' + Math.min(20, vis.length) + '(' + vis.length + '개 중)' : '1(1개 중)';
+    refresh();
+  }
+  function showGt(gt) {
+    curGt = gt;
+    document.querySelectorAll('.gt').forEach(el => el.style.display = el.id === gt ? '' : 'none');
+    document.querySelectorAll('#gtabs a').forEach(a => a.classList.toggle('on', a.dataset.gt === gt));
+    refresh();
+  }
+  $('gtabs').onclick = e => { const a = e.target.closest('[data-gt]'); if (a) showGt(a.dataset.gt); };
+
+  /* ---------- FL-01 화면 열기 (BR-001·002·003·008·022·023·025) ---------- */
+  function syncCo() { $('cCoNm').value = COS[st('cCo').toUpperCase()] || ''; $('uCo').value = $('cCo').value; $('uCoNm').value = $('cCoNm').value; }
+  function syncBu() { const b = (BUS[st('cCo').toUpperCase()] || []).find(x => x[0] === st('cBu').toUpperCase()); $('cBuNm').value = b ? b[1] : ''; }
+  $('cCo').value = DEF.co; $('cBu').value = DEF.bu; $('cYr').value = yearDefault; $('uYr').value = yearDefault;
+  syncCo(); syncBu();
+  document.querySelector('[name=gd][value=Y]').checked = true;
+  function applyRole() { $('btnSave1').disabled = !$('optAdd').checked; $('btnSave1').title = $('optAdd').checked ? 'ZTA_C0130_DW.ZZ_BTN_02 — FL-ZTA_C0130-10' : "'추가' 권한 없음 — 비활성 (BR-ZTA_C0130-023 · REQ-008 #1)"; }
+  $('optAdd').onchange = applyRole; applyRole();
+  function flush() { ROWS = []; renderGrid(); }                                  // ScrollFlush(ZTA_C0130_DV_01)
+  ROWS = [Object.assign(blankRow(), { dummy: true })];                         // Q-001 동적 뷰 DUAL 1행
+
+  /* ---------- FL-02·03·04·06 조건 변경 (BR-004·005·006) ---------- */
+  function reqChk(id, n) { const ok = !!st(id); bad(id, !ok); if (!ok) showMsg(n, 'err', '필수 필드입니다. (15,8) (BR-ZTA_C0130-004 · ' + (n === 1 ? 'REQ-003 #1' : 'REQ-013 #1') + ')'); return ok; }
+  $('cCo').addEventListener('change', () => {
+    syncCo(); if (!reqChk('cCo', 1)) return;
+    const b = BUS[st('cCo').toUpperCase()] || [];                               // Q-003·004
+    $('cBu').value = b.length > 1 ? '' : (b[0] ? b[0][0] : ''); syncBu();
+    $('cDept').value = ''; $('cDeptNm').value = ''; flush();
+    showMsg(1, '', '');
+  });
+  $('uCo').addEventListener('change', () => { $('cCo').value = $('uCo').value; $('cCo').dispatchEvent(new Event('change')); });
+  $('cBu').addEventListener('change', () => { syncBu(); $('cDept').value = ''; $('cDeptNm').value = ''; flush(); reqChk('cBu', 1); });
+  $('cDept').addEventListener('change', () => { const d = DEPTS[st('cDept').toUpperCase()]; $('cDeptNm').value = d ? d.nm : ''; flush(); });
+  $('cEmp').addEventListener('change', () => { const e = EMPS[st('cEmp').toUpperCase()]; $('cEmpNm').value = e ? e.nm : ''; });
+  $('cYr').addEventListener('change', () => { $('uYr').value = $('cYr').value; if (reqChk('cYr', 1)) G_YEAR = st('cYr'); });
+  $('uYr').addEventListener('change', () => { $('cYr').value = $('uYr').value; G_YEAR = st('uYr'); });
+
+  /* ---------- 회사·BU 찾기 (BR-009, Q-040·041) ---------- */
+  $('btnCoPop').onclick = () => { $('pCoBody').innerHTML = Object.entries(COS).map(([k, x]) => '<tr><td><a data-co="' + k + '">' + k + '</a></td><td>' + esc(x) + '</td></tr>').join(''); $('popCo').classList.add('on'); refresh(); };
+  $('pCoBody').onclick = e => { const a = e.target.closest('[data-co]'); if (!a) return; $('cCo').value = a.dataset.co; closePops(); $('cCo').dispatchEvent(new Event('change')); };
+  $('btnBuPop').onclick = () => { const b = BUS[st('cCo').toUpperCase()] || []; $('pBuBody').innerHTML = b.map(([k, x]) => '<tr><td><a data-bu="' + k + '">' + k + '</a></td><td>' + esc(x) + '</td></tr>').join('') || '<tr><td colspan="2" class="hint">일치하는 값을 찾을 수 없습니다. (PeopleSoft 표준 동작, 124,38)</td></tr>'; $('popBu').classList.add('on'); refresh(); };
+  $('pBuBody').onclick = e => { const a = e.target.closest('[data-bu]'); if (!a) return; $('cBu').value = a.dataset.bu; closePops(); $('cBu').dispatchEvent(new Event('change')); };
+
+  /* ---------- FL-07 검색 (BR-004·009·010·011, Q-005·006) ---------- */
+  function deptSet(d, sub) {
+    if (!sub) return [d];
+    const out = [d]; let more = true;
+    while (more) { more = false; Object.entries(DEPTS).forEach(([k, x]) => { if (out.includes(x.parent) && !out.includes(k)) { out.push(k); more = true; } }); }
+    return out;
+  }
+  function search() {
+    ROWS = []; renderGrid();
+    for (const id of ['cCo', 'cBu', 'cYr']) if (!reqChk(id, 1)) return;                 // fncrequiredchkLV0('ALL')
+    showMsg(1, '', '');
+    const co = st('cCo').toUpperCase(), bu = st('cBu').toUpperCase(), dept = st('cDept').toUpperCase(), emp = st('cEmp').toUpperCase(), elig = st('cElig'), hr = $('cHr').value, yr = Number(st('cYr'));
+    const depts = dept ? deptSet(dept, $('cSub').checked) : null;                     // BR-010 R_02_B / R_02
+    const okEmp = (e, no) => e.co === co && e.bu === bu && (!depts || depts.includes(e.dept)) && (!emp || no === emp) && (!elig || e.elig === elig) && (!hr || e.hr === hr) && MY_DEPTS.includes(e.dept);
+    const c = DB.filter(d => d.co === co && d.yr === yr && EMPS[d.no] && okEmp(EMPS[d.no], d.no)).map(d => sqlCalcC(d, EMPS[d.no]));
+    const n = Object.entries(EMPS).filter(([no, e]) => e.hr === 'A' && okEmp(e, no) && !DB.some(d => d.yr === yr && d.co === co && d.no === no) && (e.a01 + e.a02 + e.aa9 + e.hrs) > 0 && no !== 'E1004')
+      .map(([no, e]) => sqlCalcN(e, no));                                              // 'N' 행 (OQ-02) — E1004 는 행 추가용 샘플이라 직급그룹 조건 밖으로 둠
+    ROWS = c.concat(n); renderGrid();
+  }
+  $('btnSearch').onclick = search;
+
+  /* ---------- FL-08·09 행 추가·수정 (BR-007·018~021) ---------- */
+  $('btnAdd').onclick = () => { ROWS = ROWS.filter(r => !r.dummy); ROWS.push(Object.assign(blankRow(), { isNew: true })); renderGrid(); };
+  function empView() { return st('cDept') ? 'ZZ_EMP2_BUD_V' : 'ZZ_EMP2_BU_V'; }                  // BR-007 FieldDefault
+  function setNewEmp(i, no) {
+    const r = ROWS[i]; no = no.trim().toUpperCase();
+    const e = EMPS[no];
+    if (!e || e.co !== st('cCo').toUpperCase()) { showMsg(1, 'err', '(임시문구-asis 미정의) 찾기 목록에 없는 사번입니다 — PeopleSoft 표준 프롬프트 검증 (REQ-006 #1)'); return; }
+    fillEmp(r, no); showMsg(1, '', ''); renderGrid();
+  }
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (t.dataset && t.dataset.new != null) return setNewEmp(Number(t.dataset.new), t.value);
+    if (t.dataset && t.dataset.k) {
+      const r = ROWS[Number(t.dataset.i)], k = t.dataset.k, v = Number(t.value) || 0;
+      r[{ ENT1: 'e1', ENT2: 'e2', ENT3: 'e3', PRE: 'pre', ADJ: 'adj', PATH: 'path', DUTY: 'duty' }[k]] = v;
+      r.changed = true; setValue(r, k); renderGrid();
+    }
+  });
+  document.addEventListener('click', e => {
+    const p = e.target.closest('[data-emppop]');
+    if (p) {
+      const i = Number(p.dataset.emppop), co = st('cCo').toUpperCase(), bu = st('cBu').toUpperCase(), d = st('cDept').toUpperCase();
+      $('pEmpView').textContent = '(목업 설명) 찾기 뷰 ' + empView() + ' — 부서 조건이 있으면 부서 기준, 없으면 비즈니스 단위 기준 (BR-ZTA_C0130-007). 뷰 정의는 원천에 없어 목업은 회사·BU(·부서) 로 거릅니다.';
+      $('pEmpBody').innerHTML = Object.entries(EMPS).filter(([, x]) => x.co === co && x.bu === bu && (!d || x.dept === d)).map(([no, x]) => '<tr><td><a data-pick="' + i + '|' + no + '">' + no + '</a></td><td>' + esc(x.nm) + '</td><td>' + esc(DEPTS[x.dept].nm) + '</td><td>' + x.bu + '</td></tr>').join('');
+      $('popEmp').classList.add('on'); return refresh();
+    }
+    const k = e.target.closest('[data-pick]');
+    if (k) { const [i, no] = k.dataset.pick.split('|'); closePops(); return setNewEmp(Number(i), no); }
+    const del = e.target.closest('[data-del]');
+    if (del) { const r = ROWS[Number(del.dataset.del)]; if (r.dummy) return; r.del = true; renderGrid(); }
+    const tb = e.target.closest('[data-tab]');
+    if (tb) showTab(tb.dataset.tab);
+  });
+
+  /* ---------- FL-10 저장 (BR-024, Q-011~014) ---------- */
+  $('btnSave1').onclick = () => {
+    let u = 0, ins = 0, dl = 0;
+    const co = st('cCo').toUpperCase(), yr = Number(G_YEAR);
+    ROWS.forEach(r => {
+      if (!r.no || !(r.changed || r.isNew || r.del)) return;
+      const val = { co, yr, no: r.no, id: r.id, base: r.base, sd: r.sd, ed: r.ed, ab: r.ab, lv: r.lv, e1: r.e1, e2: r.e2, e3: r.e3, capa: r.capa, pre: r.pre, ent: r4(r.entTot - r.nex - r.cur), adj: r.adj, path: r.path, duty: r.duty };
+      const key = d => d.co === co && d.yr === yr && d.no === r.no && d.id === r.id;
+      if (r.changed && !r.isNew && !r.del) {
+        if (r.flag === 'C') { const x = DB.find(key); if (x) { Object.assign(x, val, { updBy: ME, upd: now() }); u++; r.updBy = ME; r.upd = now(); } }
+        else if (!DB.some(d => d.yr === yr && d.co === co && d.no === r.no)) { DB.push(Object.assign(val, { updBy: ME, upd: now() })); ins++; r.flag = 'C'; }
+      }
+      if (r.isNew && !r.del) { DB.push(Object.assign(val, { updBy: ME, upd: now() })); ins++; r.flag = 'C'; }
+      if (r.del && !r.isNew) { const b = DB.length; DB = DB.filter(d => !key(d)); dl += b - DB.length; }
+      r.changed = false; r.isNew = false;
+    });
+    ROWS = ROWS.filter(r => !r.del);
+    $('dbLog').textContent = '(목업 설명) 저장 처리 — 수정 ' + u + '건, 등록 ' + ins + '건, 삭제 ' + dl + '건. 원본은 확인·완료 메시지와 재조회가 없습니다 (BR-ZTA_C0130-024 · REQ-009, OQ-09)';
+    renderDb(); renderGrid();
+  };
+  function renderDb() {
+    $('dbBody').innerHTML = DB.map(d => '<tr><td>' + d.co + '</td><td>' + d.yr + '</td><td>' + esc(d.no) + '</td><td>' + esc(d.id) + '</td><td>' + esc(d.base) + '</td><td>' + esc(d.sd) + '</td><td>' + esc(d.ed) + '</td><td>' + d.e1 + '</td><td>' + d.e2 + '</td><td>' + d.e3 + '</td><td>' + d.pre + '</td><td>' + d.ent + '</td><td>' + d.adj + '</td><td>' + d.path + '</td><td>' + d.duty + '</td><td>' + esc(d.updBy || '') + '</td><td>' + esc(d.upd || '') + '</td></tr>').join('') || '<tr><td colspan="17" class="hint">(비어 있음)</td></tr>';
+    refresh();
+  }
+
+  /* ---------- 연차 일괄로드 (BR-025~030) ---------- */
+  const gd = () => (document.querySelector('[name=gd]:checked') || {}).value;
+  const SAMPLE = ['사번\t전년도결근일수\t전년도휴직일수\t기본연차\t가산연차\t발생조정일수\t선사용연차\t사용조정일수\t경로변경사용분\t의무사용기준일수',
+    'E1003\t0\t0\t15\t0\t0\t0\t0\t0\t10', 'E1004\t1\t0\t15\t3\t0\t1\t0\t0\t10', 'E1001\t0\t0\t15\t2\t0\t1\t0\t0\t10', 'E9999\t0\t0\t15\t0\t0\t0\t0\t0\t10', 'E1004\t0\t0\t16\t0\t0\t0\t0\t0\t10'].join('\n');
+  function renderUp() {
+    const co = st('cCo').toUpperCase(), yr = Number(st('cYr'));
+    const mine = TP.filter(t => t.co === co && t.yr === yr);                         // Q-027
+    $('sumBody').innerHTML = '<tr><td class="rn">1</td>' + (SUM ? [SUM.t, SUM.s, SUM.f] : [0, 0, 0]).map(x => '<td class="nr">' + x + '</td>').join('') + '</tr>';
+    $('errBody').innerHTML = ERRV.length ? ERRV.map((r, i) => '<tr><td class="rn">' + (i + 1) + '</td><td>오류</td><td>' + esc(r.msg) + '</td><td>' + esc(r.id || '') + '</td><td>' + esc(r.no) + '</td><td>' + r.yr + '</td></tr>').join('') : '<tr><td class="rn">1</td><td></td><td></td><td></td><td></td><td></td></tr>';
+    $('tpPos').textContent = ERRV.length ? '1-' + Math.min(20, ERRV.length) + '(' + ERRV.length + '개 중)' : '1(1개 중)';
+    $('tpBody').innerHTML = TP.map(t => '<tr><td>' + t.rn + '</td><td>' + (t.pc === 'S' ? 'S 정상' : t.pc === 'F' ? 'F 오류' : '') + '</td><td>' + esc(t.msg || '') + '</td><td>' + t.co + '</td><td>' + t.yr + '</td><td>' + esc(t.no) + '</td><td>' + esc(t.id || '') + '</td><td>' + t.ab + '</td><td>' + t.lv + '</td><td>' + t.e1 + '</td><td>' + t.e2 + '</td><td>' + t.e3 + '</td><td>' + t.pre + '</td><td>' + t.adj + '</td><td>' + t.path + '</td><td>' + t.duty + '</td><td>' + t.ent + '</td><td>' + t.sd + '</td><td>' + t.ed + '</td><td>' + esc(t.base) + '</td></tr>').join('') || '<tr><td colspan="20" class="hint">(비어 있음)</td></tr>';
+    refresh(); return mine;
+  }
+  function listTemp() {                                                             // fncGetListTemp (BR-029, Q-023·027·028)
+    const co = st('cCo').toUpperCase(), yr = Number(st('cYr'));
+    const mine = TP.filter(t => t.co === co && t.yr === yr);
+    SUM = { t: mine.length, s: mine.filter(t => t.pc === 'S').length, f: mine.filter(t => t.pc !== 'S').length };
+    ERRV = TP.filter(t => t.pc === 'F');
+    $('uStatus').value = 'Total : ' + TP.length + ', Success : ' + TP.filter(t => t.pc === 'S').length + ', Fail : ' + TP.filter(t => t.pc === 'F').length;
+    renderUp();
+  }
+  $('btnTmpl').onclick = () => showMsg(2, 'ok', '(목업 설명) ZBB_C0640_DW.FUNCLIB 의 fncGetFileDownLoad 를 부릅니다 — 원천에 없어 내려받는 파일은 확인 필요 (BR-ZTA_C0130-026 · REQ-012 #1, OQ-ZTA_C0130-03)');
+  $('btnUpload').onclick = () => {
+    for (const id of ['uCo', 'uYr']) if (!reqChk(id, 2)) return;
+    showMsg(2, '', '');
+    if (!$('upText').value) $('upText').value = SAMPLE;
+    $('popUp').classList.add('on'); refresh();
+  };
+  $('upOk').onclick = () => {                                                        // FL-12 (BR-027·028)
+    closePops();
+    const co = st('uCo').toUpperCase(), yr = Number(st('uYr'));
+    TP = [];                                                                         // Q-015
+    const lines = $('upText').value.replace(/\\t/g, '\t').split(/\r?\n/);
+    for (let i = 1; i <= lines.length; i++) {
+      if (i === 1 || !lines[i - 1].trim()) continue;
+      if ($('upFail').checked && i === Number($('upFailLine').value)) { showMsg(2, 'err', 'Error Line : ' + i + ' , (목업 설명) 샘플 오류 (BR-ZTA_C0130-027 · REQ-013 #4)'); refresh(); renderUp(); return; }
+      const a = lines[i - 1].split('\t').map(s => s.trim()), n = k => Number(a[k]) || 0, e = EMPS[(a[0] || '').toUpperCase()], [sd, ed] = PERIOD();
+      TP.push({ rn: i - 1, co, yr, no: (a[0] || '').toUpperCase(), ab: n(1), lv: n(2), e1: n(3), e2: n(4), e3: n(5), pre: n(6), adj: n(7), path: n(8), duty: n(9), ent: n(3) + n(4) + n(5) - n(6),
+        sd, ed, base: e ? (e.d005 || e.hire) : '', pc: '', msg: '' });                              // Q-016·017·018
+    }
+    const g = gd();
+    TP.forEach(t => {                                                                // fncChkLoad (BR-028)
+      const e = EMPS[t.no] && EMPS[t.no].co === t.co ? EMPS[t.no] : null; t.pc = 'S'; t.msg = '';
+      if (!e) { t.pc = 'F'; t.msg += '해당 사원이 존재하지 않습니다.'; }
+      else if (g === 'Y') {
+        if (DB.some(d => d.co === t.co && d.id === e.id && d.no === t.no && d.yr === t.yr)) { t.pc = 'F'; t.msg += '해당 년도에 생성된 연차가 존재합니다.'; }
+        else if (TP.filter(x => x.co === t.co && x.no === t.no && x.yr === t.yr).length > 1) { t.pc = 'F'; t.msg += '업로드 파일 내에 중복된 값이 존재합니다.'; }
+      } else if (!DB.some(d => d.co === t.co && d.id === e.id && d.no === t.no && d.yr === t.yr)) { t.pc = 'F'; t.msg += '삭제할 조건에 맞는 데이터가 없습니다.'; }
+      if (t.pc === 'S') { t.id = e.id; t.rcd = e.rcd; }
+    });
+    listTemp();
+  };
+  $('btnSave2').onclick = () => {                                                    // FL-13 (BR-030)
+    const g = gd(), s = SUM ? SUM.s : 0;
+    if (!window.confirm(g === 'Y' ? '성공 ' + s + ' 건의 데이타를 DB 에 저장 하시겠습니까? (21000,75)' : '성공 ' + s + ' 건의 데이타를 DB 에 삭제 하시겠습니까? (21000,95)')) return;
+    let n = 0, pmsg = '';
+    TP.filter(t => t.pc === 'S').forEach(t => {
+      const key = d => d.co === t.co && d.yr === t.yr && d.no === t.no && d.id === t.id;
+      if (g === 'Y') {
+        if (DB.some(d => d.id === t.id && d.yr === t.yr && d.co === t.co && d.no === t.no)) { pmsg += '해당 년도에 생성된 연차가 존재합니다.'; t.pc = 'F'; t.msg = pmsg; return; }   // Q-032·020
+        DB.push({ co: t.co, yr: t.yr, no: t.no, id: t.id, base: t.base, sd: t.sd, ed: t.ed, ab: t.ab, lv: t.lv, e1: t.e1, e2: t.e2, e3: t.e3, capa: 0, pre: t.pre, ent: t.ent, adj: t.adj, path: t.path, duty: t.duty, updBy: ME, upd: now() });  // Q-024
+      } else DB = DB.filter(d => !key(d));                                           // Q-025
+      TP = TP.filter(x => x !== t); n++;                                             // Q-026
+    });
+    if (n > 0) showMsg(2, 'ok', '정상적으로 저장되었습니다. (22900,31) (BR-ZTA_C0130-030 · REQ-015 #4)');
+    $('dbLog').textContent = '(목업 설명) 일괄 저장 — ' + (g === 'Y' ? '등록 ' : '삭제 ') + n + '건 (BR-ZTA_C0130-030)';
+    listTemp(); renderDb();
+  };
+
+  function closePops() { document.querySelectorAll('.pop.on').forEach(p => p.classList.remove('on')); }
+  document.addEventListener('click', e => { if (e.target.closest('.pop [data-close]')) { closePops(); refresh(); } });
+
+  /* ---------- 탭·화면 전환 ---------- */
+  function showTab(n) {
+    closePops();
+    $('viewP1').style.display = n === '1' ? '' : 'none'; $('viewP2').style.display = n === '2' ? '' : 'none';
+    $('tab1').classList.toggle('on', n === '1'); $('tab2').classList.toggle('on', n === '2');
+    refresh();
+  }
+  $('tab1').onclick = () => showTab('1'); $('tab2').onclick = () => showTab('2');
+  const SCREENS = [['gtBase', '연차관리 기준 탭'], ['gtOcc', '연차관리 발생 탭'], ['gtUse', '연차관리 사용 탭'], ['gtRem', '연차관리 잔여 탭'], ['viewP1', '연차 현황관리 탭'], ['viewP2', '연차 일괄로드 탭'],
+    ['popCo', '회사 찾기 팝업'], ['popBu', '비즈니스 단위 찾기 팝업'], ['popEmp', '사번 찾기 팝업'], ['popUp', '파일 올리기 창']];
+  function sampleSearch() { if (ROWS.some(r => r.no)) return ''; search(); return '(목업 설명) 샘플 조건으로 검색했습니다.'; }
+  function goScreen(sid, id) {
+    closePops();
+    if (sid.startsWith('gt')) { showTab('1'); showGt(sid); return sampleSearch(); }
+    if (sid === 'viewP1') { showTab('1'); return ['REQ-ZTA_C0130-004', 'REQ-ZTA_C0130-006'].includes(id) ? sampleSearch() : ''; }
+    if (sid === 'viewP2') { showTab('2'); if (id === 'REQ-ZTA_C0130-014' && !SUM) { $('upText').value = SAMPLE; $('upFail').checked = false; $('upOk').click(); return '(목업 설명) 샘플 파일을 업로드했습니다.'; } return ''; }
+    if (sid === 'popCo') { showTab('1'); $('btnCoPop').click(); return ''; }
+    if (sid === 'popBu') { showTab('1'); $('btnBuPop').click(); return ''; }
+    if (sid === 'popEmp') { showTab('1'); let r = ROWS.findIndex(x => x.isNew && !x.no); if (r < 0) { $('btnAdd').click(); r = ROWS.length - 1; } document.querySelector('[data-emppop="' + r + '"]').click(); return ''; }
+    if (sid === 'popUp') { showTab('2'); if (!$('upText').value) $('upText').value = SAMPLE; $('popUp').classList.add('on'); return ''; }
+    return '';
+  }
+  renderGrid(); renderDb(); renderUp();
+
+
+  /* ================= 요구사항 초점·패널 (공통) ================= */
+  const short = id => id.replace(/^REQ-[A-Z0-9_]+-/, 'REQ-');
+  const isShown = el => el.getClientRects().length > 0 && el.offsetHeight > 0;
+  const oqTip = id => id + ': ' + (OQS[id] || '');
+  const OQ_RE = new RegExp('OQ-' + PFX + '-\\d+', 'g');
+  const oqText = s => esc(s).replace(OQ_RE, m => '<span class="oq" title="' + esc(oqTip(m)) + '">' + m + '</span>');
+  const sidOf = el => (SCREENS.find(([sid]) => el.closest('#' + sid)) || [''])[0];
+  const regions = id => [...document.querySelectorAll('[data-req]')].flatMap(el => el.dataset.req.split(' ')
+    .map(t => t.split(':')).filter(([rid]) => rid === id).map(([, n]) => ({ el, acs: n ? n.split(',').map(Number) : [] })));
+  // 주 화면: 그 REQ 의 data-req 영역이 있는 첫 화면(팝업 제외, SCREENS 순서)
+  const homeOf = id => {
+    const sids = regions(id).filter(y => !y.el.closest('.pop')).map(y => sidOf(y.el)).filter(Boolean);
+    const s = SCREENS.find(([sid]) => sids.includes(sid));
+    return s ? s[0] : '';
+  };
+  let focus = null;
+  function focusReq(id, fromEl, navigate) {
+    let note = '';
+    if (navigate) {
+      const h = homeOf(id);
+      if (h && (!isShown($(h)) || document.querySelector('.pop.on'))) note = goScreen(h, id) || '';
+      else if (h) note = goScreen(h, id) || '';
+    }
+    const shown = regions(id).filter(x => isShown(x.el));
+    const i = fromEl ? shown.findIndex(x => x.el.contains(fromEl)) : 0;
+    focus = { id, i: Math.max(0, i), note };
+    document.body.classList.add('rp-open');
+    applyFocus(true);
+    const item = document.querySelector('.rq.on'); if (item) item.scrollIntoView({ block: 'nearest' });
+  }
+  function unfocus() { focus = null; applyFocus(false); }
+  function applyFocus(scroll) {
+    document.querySelectorAll('.rfocus').forEach(el => { el.classList.remove('rfocus', 'rcur'); delete el.dataset.flabel; });
+    if (!focus) { document.body.classList.remove('focusing'); renderPanel(); return; }
+    const shown = regions(focus.id).filter(x => isShown(x.el));
+    if (focus.i >= shown.length) focus.i = 0;
+    document.body.classList.toggle('focusing', shown.length > 0);
+    shown.forEach((x, i) => { x.el.classList.add('rfocus'); x.el.classList.toggle('rcur', i === focus.i);
+      x.el.dataset.flabel = short(focus.id) + (x.acs.length ? ' #' + x.acs.join('·#') : ''); });
+    const c = shown[focus.i];
+    if (scroll && c && !c.el.closest('.pop')) window.scrollTo({ top: Math.max(0, c.el.getBoundingClientRect().top + window.scrollY - 90), behavior: 'smooth' });
+    renderPanel();
+  }
+  refresh = function () { if (!ready) return; if (focus) applyFocus(false); else renderPanel(); };
+  function renderPanel() {
+    $('rpList').innerHTML = REQS.map(r => {
+      const all = regions(r.id), on = focus && focus.id === r.id;
+      const locs = SCREENS.filter(([sid]) => all.some(x => sidOf(x.el) === sid))
+        .map(([sid, name]) => '<span data-go="' + sid + '" title="이 화면으로 이동" class="' + (all.some(x => sidOf(x.el) === sid && isShown(x.el)) ? 'here' : '') + '">' + name + '</span>').join('');
+      let x = '';
+      if (on) {
+        const shown = all.filter(y => isShown(y.el));
+        const msg = focus.note || (shown.length ? '' : all.length ? '지금 화면에 없습니다 — 위 화면 위치를 누르세요.' : '화면 위치 없음');
+        x = '<div class="x"><div class="meta">' + esc(r.id) + ' · 행위자: ' + esc(r.actor) + ' · 우선순위: ' + esc(r.priority) + '</div>' +
+          (msg ? '<div class="away">' + esc(msg) + '</div>' : '') +
+          '<b>인수 조건</b><ol class="ac">' + r.acceptance_criteria.map((ac, i) => '<li><span class="mk">#' + (i + 1) + '</span><span>' + oqText(ac) + '</span></li>').join('') + '</ol>' +
+          '<div class="brs">관련 규칙: ' + r.rules.map(b => '<span class="br" title="' + esc(BR_TITLES[b] || '') + '">' + b.replace(PFX + '-', '') + '</span>').join('') + '</div>' +
+          (r.notes ? '<div class="notes">참고: ' + oqText(r.notes) + '</div>' : '') + '</div>';
+      }
+      return '<div class="rq' + (on ? ' on' : '') + '" data-rq="' + r.id + '">' +
+        '<div class="h"><a class="rb">' + short(r.id) + '</a><b>' + esc(r.title) + '</b><span class="cnt">' + (on ? '▾' : '▸') + '</span></div>' +
+        '<div class="st">' + esc(r.statement) + '</div>' +
+        '<div class="loc">화면 위치: ' + (locs || '<span>화면 위치 없음</span>') + '</div>' + x + '</div>';
+    }).join('');
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.rb[data-rb]');
+    if (b) { e.preventDefault(); e.stopPropagation(); return focusReq(b.dataset.rb, b, false); }
+    if (document.body.classList.contains('focusing') && !e.target.closest('.rfocus, .rpanel, .pop, .topbar')) { e.preventDefault(); e.stopPropagation(); unfocus(); }
+  }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (focus) unfocus(); else if (document.querySelector('.pop.on')) { closePops(); refresh(); } } });
+  $('rpList').onclick = e => {
+    const rq = e.target.closest('[data-rq]'); if (!rq) return;
+    const id = rq.dataset.rq, go = e.target.closest('[data-go]');
+    if (go) {
+      const note = goScreen(go.dataset.go, id) || '';
+      const shown = regions(id).filter(x => isShown(x.el));
+      focus = { id, i: Math.max(0, shown.findIndex(x => sidOf(x.el) === go.dataset.go)), note };
+      return applyFocus(true);
+    }
+    if (e.target.closest('.x')) return;
+    if (focus && focus.id === id) unfocus(); else focusReq(id, null, true);
+  };
+  $('rpToggle').onclick = () => { document.body.classList.toggle('rp-open'); renderPanel(); };
+  $('rpClose').onclick = () => { document.body.classList.remove('rp-open'); unfocus(); };
+  document.querySelectorAll('[data-oq]').forEach(el => el.title = oqTip(el.dataset.oq));
+  if (window.matchMedia('(min-width: 900px)').matches) document.body.classList.add('rp-open');
+  ready = true;
+  renderPanel();
+})();
+</script>
+<!-- mockup-view:start v1 -->
+<style>
+  /* ---- 개발정보 토글 (공통 블록, tools/analysis/mockup_view.py 로 넣음 — 손으로 고치지 않는다) ---- */
+  .mv-sw { display: inline-flex; margin: 0 auto; border: 1px solid rgba(255,255,255,.55); border-radius: 12px; overflow: hidden; font: bold 11px/20px Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; white-space: nowrap; }
+  .mv-sw button { border: none; border-radius: 0; background: transparent; color: var(--header-text, #fff); padding: 0 11px; font: inherit; cursor: pointer; opacity: .75; }
+  .mv-sw button[aria-pressed="true"] { background: var(--header-text, #fff); color: var(--header, #2f4f6f); opacity: 1; }
+  @media (max-width: 600px) { .mv-sw { order: 3; } }
+  .mv-cond { display: none; border: 1px dashed var(--line, #c4c4c4); padding: 4px 8px; margin: 0 0 8px; font-size: 11px; max-width: 980px; }
+  .mv-cond > .mv-h { color: var(--muted, #6b6b6b); font-weight: bold; margin-right: 6px; }
+  .mv-cond > :not(.mv-h) { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 2px 12px 2px 0; }
+  :root[data-mv="screen"] .mv-cond.on { display: block; }
+  :root[data-mv="screen"] :is(.note, .rpanel, #rpToggle, .rb, .oq, .fname, .hid-mark, #dbBox, .mock, .log, .plog, .runlog, [data-dev]) { display: none !important; }
+  :root[data-mv="screen"] body.focusing::before { display: none; }
+  :root[data-mv="screen"] .rfocus { outline: none; }
+  :root[data-mv="screen"] .rfocus::after { display: none; }
+</style>
+<script>
+/* 개발정보 토글: '화면만 보기' 면 노란 안내 상자·요구사항 패널·REQ 배지·OQ·필드명·숨김 필드·처리 로그를 숨긴다.
+   숨기는 상자 안의 목업 조건(사용자·서버 값 바꾸기)은 메뉴 경로 아래 '목업 조건' 줄로 옮겨 그대로 쓰게 하고, 돌아오면 제자리로.
+   상태는 localStorage 'mockup.view' (모든 목업 공통), 주소 ?view=screen|dev 가 우선. */
+(function () {
+  const root = document.documentElement, body = document.body;
+  const HIDE = '.note, .mock, .log, .plog, .runlog, #dbBox, [data-dev]';   // 요구사항 패널은 CSS 로만 숨김
+  const DEV_OPTS = ['optFname', 'optRefs', 'optHidden', 'optHid', 'optLog', 'optSrc'];
+  const KEEP_WRAP = '[data-mockctl], .mockctl, .sim, .opts, label, .key, dd, p';
+  const bar = document.querySelector('.topbar');
+  if (!bar || root.hasAttribute('data-mv')) return;
+
+  // 숨기는 상자 안의 목업 조건 컨트롤 → 옮길 묶음 (처음 읽을 때 한 번)
+  const conds = [];
+  document.querySelectorAll(HIDE).forEach(box => {
+    if (box.parentElement.closest(HIDE)) return;
+    box.querySelectorAll('input, select, textarea, button').forEach(c => {
+      if (DEV_OPTS.includes(c.id) || c.closest('.rb, [data-dev], ol, ul, table, #tblView, #dbBox') && !c.closest('[data-mockctl]')) return;
+      if (box.matches('.note') && c.disabled) return;   // 범례 견본
+      let w = c.closest(KEEP_WRAP);
+      if (!w || !box.contains(w) || w === box) w = c;
+      if (w.querySelector('#' + DEV_OPTS.join(', #'))) w = c;
+      if (!conds.some(x => x.contains(w))) {
+        for (let i = conds.length - 1; i >= 0; i--) if (w.contains(conds[i])) conds.splice(i, 1);
+        conds.push(w);
+      }
+    });
+  });
+  // 목업 조건 줄: 메뉴 경로 바로 아래
+  const strip = document.createElement('div');
+  strip.className = 'mv-cond';
+  strip.innerHTML = '<span class="mv-h" title="원본 화면에 없는 목업 전용 설정 (목업 설명)">목업 조건</span>';
+  const crumb = document.querySelector('.wrap .crumb') || document.querySelector('.crumb');
+  if (crumb) crumb.after(strip); else bar.after(strip);
+  const homes = new Map();
+
+  // 상단 바 가운데 스위치
+  const sw = document.createElement('span');
+  sw.className = 'mv-sw';
+  sw.innerHTML = '<button type="button" data-v="dev" title="노란 안내 상자·요구사항·REQ·OQ·처리 로그를 함께 봅니다">개발정보 보기</button>'
+    + '<button type="button" data-v="screen" title="기존 화면만 봅니다 (목업 조건은 남김)">화면만 보기</button>';
+  bar.insertBefore(sw, bar.lastElementChild);
+
+  let saved = null;
+  function set(v, store) {
+    if (v === root.getAttribute('data-mv')) return;
+    if (v === 'screen') {
+      if (body.classList.contains('focusing')) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      saved = { rp: body.classList.contains('rp-open'), opts: [] };
+      body.classList.remove('rp-open', 'focusing');
+      DEV_OPTS.forEach(id => { const o = document.getElementById(id); if (o && o.checked) { o.click(); saved.opts.push(id); } });
+      conds.forEach(w => { const mark = document.createComment('mv'); w.before(mark); homes.set(w, mark); strip.appendChild(w); });
+      strip.classList.toggle('on', conds.length > 0);
+    } else if (saved) {
+      conds.forEach(w => { const mark = homes.get(w); if (mark) { mark.replaceWith(w); homes.delete(w); } });
+      saved.opts.forEach(id => { const o = document.getElementById(id); if (o && !o.checked) o.click(); });
+      if (saved.rp) body.classList.add('rp-open');
+      saved = null;
+    }
+    root.setAttribute('data-mv', v);
+    sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+    if (store) try { localStorage.setItem('mockup.view', v); } catch (e) { /* 저장 못 해도 동작 */ }
+  }
+  sw.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) set(b.dataset.v, true); });
+
+  let start = 'dev';
+  try { start = localStorage.getItem('mockup.view') === 'screen' ? 'screen' : 'dev'; } catch (e) { /* 기본값 */ }
+  const q = new URLSearchParams(location.search).get('view');
+  if (q === 'screen' || q === 'dev') start = q;
+  root.setAttribute('data-mv', 'dev');
+  sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === 'dev')));
+  if (start === 'screen') set('screen', false);
+})();
+</script>
+<!-- mockup-view:end -->
+</body>
+</html>
