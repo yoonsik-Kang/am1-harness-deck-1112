@@ -1,0 +1,1270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PERSON1604 통합결재함 — 기존 화면 목업</title>
+<!--
+  기존 eHR 화면(PERSON1604 통합결재함, 별칭 A_PERSON1604) 재현 목업.
+  - 화면 구성: processed/ehr/개인정보(PERSON)/결재관리/통합결재함(PERSON1604)
+    (README.md·program.json — 메뉴 경로·URL·하위 액션,
+     screenshots/PERSON1604_1.png 결재진행함(0건)·_2.png 승인 탭·_3.png 상신함 탭 — 통합결재함 타일즈(메뉴 없는 전체 창) 'HR 결재함' 제목,
+     회색 검색 상자(요청일자·기안문서구분·검색 조건 + 파란 조회), 탭 상자, 목록 열, 승인/반려 버튼, 결재선 표 배치와 샘플 데이터 모양,
+     _4.png 상세보기 팝업 '결재처리(상세화면)' 모양)
+    JSP source/ehr/as-is-ehr/EHR-Backoffice/WebContent/WEB-INF/jsp/ehr/common/approval/approvalList.jsp
+        source/ehr/as-is-ehr/EHR-Backoffice/WebContent/WEB-INF/jsp/ehr/absence/flexible/abFXPCOFFDtlPopup.jsp
+        source/ehr/as-is-ehr/EHR-Backoffice/WebContent/WEB-INF/jsp/ehr/common/approval/approvalGuide.jsp
+    컨트롤러 ApprovalListController.java (page·search·saveAppr·saveReturn·guidePopup·pcoffDetailPopup·pcoffSave), ApprovalDetailController.page
+  - 동작: analysis/ehr/개인정보(PERSON)/결재관리/통합결재함(PERSON1604)/logic.json 의 흐름(FL)·규칙(BR), queries.json(Q-001~008)
+  - 요구사항: 같은 폴더 requirements.json (REQ 글자 그대로, 스크립트로 주입). 화면 영역마다 REQ 배지(data-req="REQ-ID:인수조건번호")
+  - 데이터: 전부 샘플(문서·이름·사번·부서·PC-OFF 건 모두 가상). 코드값(결재상태 N·Y·C, 진행 A·B·C·D·E·Z, 결재구분 1~5, 문서 대분류 ZATN·ZATS·ZBEN·ZSUP·ZOFF)만 실제 값.
+    코드 이름은 XLAT 를 받지 못해 JSP 주석·스크린샷 글자를 따름
+-->
+<style>
+  :root {
+    --bg: #ffffff; --page: #ffffff; --text: #1a1d26; --muted: #868e96; --body: #343a40; --th: #333; --link: #1c5aa6; --line: #c4c4c4;
+    --card: #ffffff; --card-line: #e1e4e8; --row-line: #e9ecef; --row-on: #eef4ff;
+    --search-bg: #efefef; --search-line: #c9c9c9; --blue: #1f5fc4; --blue-dark: #174a9a; --tab-line: #c9c9c9; --tab-text: #444;
+    --b1: #1f5fc4; --b2: #d6336c; --b3: #1f5fc4; --danger: #e03131;
+    --header: #1a6fb5; --header-text: #ffffff; --pop-head: #eaf3fb; --pop-line: #7aa6b8;
+    --note-bg: #fff8e1; --note-line: #e6c65c; --oq: #b35c00; --mock: #8a8a8a;
+    --rb-bg: #5b3fa8; --rb-text: #ffffff; --hl: #7b5cd6; --panel-bg: #f6f4fb; --grid-head: #ececec; --row-alt: #f7f9fb; --btn-bg: #f3f3f3; --tab: #dfe6ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1e2227; --page: #1e2227; --text: #eef0f4; --muted: #8b90a0; --body: #d3d6de; --th: #d0d4dc; --link: #7fb2ff; --line: #4a525c;
+      --card: #1c1f28; --card-line: #2f343e; --row-line: #2a2e38; --row-on: #233149;
+      --search-bg: #2a2f37; --search-line: #444b55; --blue: #4a86e8; --blue-dark: #3a6fc4; --tab-line: #444b55; --tab-text: #c8ccd4;
+      --b1: #4a86e8; --b2: #f06595; --b3: #4a86e8; --danger: #ff8787;
+      --header: #123a5c; --pop-head: #23303c; --pop-line: #4f7484;
+      --note-bg: #3a3320; --note-line: #8a7430; --oq: #f0a050; --mock: #8c939b;
+      --rb-bg: #9c85ea; --rb-text: #16121f; --hl: #b29df5; --panel-bg: #23212b; --grid-head: #2b323a; --row-alt: #242a30; --btn-bg: #2f363e; --tab: #2b323a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1e2227; --page: #1e2227; --text: #eef0f4; --muted: #8b90a0; --body: #d3d6de; --th: #d0d4dc; --link: #7fb2ff; --line: #4a525c;
+    --card: #1c1f28; --card-line: #2f343e; --row-line: #2a2e38; --row-on: #233149;
+    --search-bg: #2a2f37; --search-line: #444b55; --blue: #4a86e8; --blue-dark: #3a6fc4; --tab-line: #444b55; --tab-text: #c8ccd4;
+    --b1: #4a86e8; --b2: #f06595; --b3: #4a86e8; --danger: #ff8787;
+    --header: #123a5c; --pop-head: #23303c; --pop-line: #4f7484;
+    --note-bg: #3a3320; --note-line: #8a7430; --oq: #f0a050; --mock: #8c939b;
+    --rb-bg: #9c85ea; --rb-text: #16121f; --hl: #b29df5; --panel-bg: #23212b; --grid-head: #2b323a; --row-alt: #242a30; --btn-bg: #2f363e; --tab: #2b323a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+  a { color: var(--link); text-decoration: none; cursor: pointer; }
+  .topbar { background: var(--header); color: var(--header-text); padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .topbar b { font-size: 15px; letter-spacing: .5px; }
+  .topbar .links { font-size: 11px; opacity: .95; }
+  .wrap { padding: 10px 16px 40px; max-width: 1240px; }
+  .crumb { color: var(--muted); font-size: 11px; margin: 4px 0 8px; }
+  .note { background: var(--note-bg); border: 1px solid var(--note-line); padding: 8px 10px; margin-bottom: 10px; font-size: 11.5px; }
+  .note label { white-space: nowrap; cursor: pointer; margin-left: 14px; }
+  .note .note-h { display: flex; justify-content: space-between; align-items: center; gap: 6px 14px; flex-wrap: wrap; }
+  .note dl { display: grid; grid-template-columns: 64px 1fr; gap: 3px 10px; margin: 6px 0 0; }
+  .note dt { color: var(--muted); font-weight: bold; }
+  .note dd { margin: 0; }
+  .note .key { display: inline-block; margin-right: 14px; }
+  .note .src { color: var(--muted); word-break: break-all; font-size: 11px; }
+  @media (max-width: 600px) { .note dl { grid-template-columns: 1fr; gap: 0; } .note dd { margin-bottom: 4px; } }
+  button { font: inherit; color: var(--text); background: var(--btn-bg); border: 1px solid var(--line); border-radius: 3px; padding: 3px 12px; cursor: pointer; }
+  select, input.txt { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); padding: 1px 4px; height: 24px; max-width: 100%; }
+  .fname { display: none; color: var(--muted); font-size: 10px; font-family: Consolas, monospace; font-weight: normal; }
+  body.show-fname .fname { display: block; }
+  .oq { color: var(--oq); font-size: 11px; cursor: help; border-bottom: 1px dotted var(--oq); font-weight: normal; }
+  .gscroll { overflow-x: auto; }
+  .mocknote { border: 1px dashed var(--line); color: var(--mock); font-size: 11px; padding: 5px 8px; margin: 8px 0 0; }
+  .sim { border: 1px dashed var(--hl); padding: 6px 8px; margin-bottom: 10px; font-size: 11px; }
+  .sim > .sh { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 4px; }
+  .sim > .sh > b { color: var(--hl); }
+  .sim .opts { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+  .sim .opts label { white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+  /* ---- 통합결재함 (approvalList.jsp, 스크린샷 1~3) ---- */
+  .scr { border: 1px solid var(--card-line); background: var(--page); }
+  .ttl { padding: 17px 30px 12px; border-bottom: 1px solid #aaa; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+  .ttl h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
+  .inner { margin: 0 30px; padding: 24px 0 20px; }
+  @media (max-width: 760px) { .inner { margin: 0 10px; } .ttl { padding: 12px 10px; } }
+  .searchwrap { background: var(--search-bg); border-top: 1px solid var(--search-line); border-bottom: 1px solid var(--search-line); padding: 22px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 20px; }
+  .searchwrap ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px 0; }
+  .searchwrap li { padding: 0 18px; border-right: 1px solid var(--search-line); }
+  .searchwrap li:last-child { border-right: none; }
+  .t_txt { display: block; font-weight: bold; margin-bottom: 8px; }
+  .dp { display: inline-flex; align-items: center; }
+  .dp input { width: 110px; height: 34px; border: 1px solid var(--search-line); padding: 0 8px; background: var(--bg); color: var(--text); font: inherit; }
+  .dp .cal { width: 34px; height: 34px; border: 1px solid var(--search-line); border-left: none; display: inline-flex; align-items: center; justify-content: center; background: var(--bg); font-size: 15px; color: var(--muted); }
+  .tilde { padding: 0 10px; color: var(--muted); }
+  .searchwrap select { height: 34px; min-width: 190px; }
+  .cond { display: inline-flex; }
+  .cond select { min-width: 140px; background: var(--search-bg); color: var(--muted); }
+  .cond input { height: 34px; width: 230px; border: 1px solid var(--search-line); margin-left: -1px; padding: 0 8px; background: var(--bg); color: var(--text); font: inherit; max-width: 46vw; }
+  .btn_search { background: var(--blue); color: #fff; border: none; border-radius: 2px; width: 150px; height: 60px; font-size: 16px; font-weight: bold; }
+  .list_count { margin: 34px 0 0; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; }
+  .list_count ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; }
+  .list_count li { border: 1px solid var(--tab-line); margin-right: -1px; padding: 10px 26px; color: var(--tab-text); cursor: pointer; white-space: nowrap; background: var(--bg); }
+  .list_count li.on { background: var(--blue); color: #fff; font-weight: bold; border-color: var(--blue); }
+  .ot-help { color: var(--danger); font-size: 12px; text-align: right; }
+  .tabp { margin: 20px 0 0; }
+  .tabp[hidden] { display: none; }
+  table.nt { width: 100%; border-collapse: collapse; }
+  table.nt th { background: var(--grid-head); font-weight: bold; padding: 16px 8px; border-top: 1px solid #aaa; border-bottom: 1px solid #ccc; text-align: left; white-space: nowrap; color: var(--th); }
+  table.nt td { padding: 14px 8px; border-bottom: 1px solid var(--row-line); vertical-align: middle; }
+  table.nt .c { text-align: center; }
+  table.nt tr.row { cursor: pointer; }
+  table.nt tr.row.on td { background: var(--row-on); }
+  table.nt td.empty { text-align: center; color: var(--body); }
+  .lst { max-height: 420px; overflow-y: auto; }
+  .box { display: inline-block; color: #fff; font-weight: bold; padding: 1px 5px; font-size: 13px; }
+  .box_ty1 { background: var(--b1); } .box_ty2 { background: var(--b2); } .box_ty3 { background: var(--b3); }
+  .btn_view { display: inline-block; border: 1px solid #bbb; color: var(--muted); padding: 2px 8px; font-size: 12px; background: var(--bg); }
+  .memo { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dtc { cursor: pointer; white-space: nowrap; }
+  .button_yn { text-align: center; padding: 25px 0 10px; margin-top: 30px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+  .button_yn button { width: 248px; height: 76px; font-size: 19px; border-radius: 0; }
+  .btn_approve { background: var(--blue); color: #fff; border: 1px solid var(--blue-dark); }
+  .btn_reject { background: var(--bg); color: var(--text); border: 1px solid #aaa; }
+  .multi-note { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  .dtl { margin: 28px 0 0; }
+  @media (max-width: 760px) { .button_yn button { width: 44%; height: 54px; } .btn_search { width: 100%; height: 44px; } }
+  /* ---- 팝업(새 창·레이어, 목업에서는 화면 아래에 펼침) ---- */
+  .pop { border: 2px solid var(--pop-line); margin: 18px 0 0; background: var(--card); }
+  .pop[hidden] { display: none; }
+  .pop .ph { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--grid-head); padding: 5px 10px; font-size: 12px; flex-wrap: wrap; }
+  .pop .pb { padding: 12px 16px 16px; }
+  .pop h3 { margin: 0 0 8px; font-size: 14px; }
+  .lay-title { background: var(--blue); color: #fff; padding: 8px 12px; font-weight: bold; display: flex; justify-content: space-between; }
+  .lay-btns { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin: 10px 0 6px; }
+  .lay-btns input.txt { flex: 1 1 260px; height: 30px; }
+  .lay-btns select { height: 30px; width: 15%; min-width: 90px; }
+  .red { color: #f00; font-size: 12px; }
+  table.pt { width: 100%; border-collapse: collapse; border-top: 2px solid var(--pop-line); }
+  table.pt th { background: var(--pop-head); width: 25%; padding: 10px; border-bottom: 1px solid var(--row-line); border-right: 1px solid var(--row-line); font-weight: bold; text-align: center; }
+  table.pt td { padding: 10px; border-bottom: 1px solid var(--row-line); }
+  .pbtn { text-align: center; margin-top: 14px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .pbtn button { min-width: 110px; background: linear-gradient(#5b8db8, #2e6a96); color: #fff; border: 1px solid #275b80; border-radius: 4px; padding: 6px 14px; }
+  .log { margin-top: 12px; border: 1px dashed var(--hl); padding: 8px; }
+  .log h2 { font-size: 12px; margin: 0 0 4px; }
+  table.g { border-collapse: collapse; width: 100%; }
+  table.g th { background: var(--grid-head); text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.g td { padding: 2px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.g td.n { text-align: right; white-space: nowrap; }
+  table.g td.t { white-space: nowrap; color: var(--muted); }
+  table.g td.wrapc { white-space: normal; min-width: 260px; font-family: Consolas, monospace; font-size: 11px; word-break: break-all; }
+  table.g td.empty { color: var(--muted); text-align: center; padding: 10px; }
+  .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 12px; display: none; z-index: 30; max-width: 86vw; }
+  /* ---- 요구사항(REQ) 배지·초점·패널 ---- */
+  .rb { display: inline-block; font: bold 10px/16px Arial, sans-serif; padding: 0 6px; border-radius: 8px; background: var(--rb-bg); color: var(--rb-text); cursor: pointer; margin-left: 4px; vertical-align: middle; white-space: nowrap; }
+  .rb:hover { text-decoration: none; filter: brightness(1.15); }
+  .topbar .rtoggle { background: var(--rb-bg); color: var(--rb-text); border: none; font-weight: bold; padding: 3px 10px; }
+  body.focusing::before { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 15; }
+  .rfocus { position: relative; z-index: 16; background-color: var(--card); outline: 2px solid var(--hl); outline-offset: 3px; border-radius: 2px; }
+  .rfocus.rcur { outline-width: 3px; animation: pulse 1.4s ease-out 1; }
+  .rfocus::after { content: attr(data-flabel); position: absolute; left: -5px; top: -21px; background: var(--hl); color: #fff; font: bold 10px/14px Arial, sans-serif; padding: 1px 6px; border-radius: 3px 3px 0 0; white-space: nowrap; pointer-events: none; }
+  :is(th, td, li, button, tr).rfocus:not(.rcur)::after { display: none; }
+  @keyframes pulse { 0% { outline-offset: 12px; } 100% { outline-offset: 3px; } }
+  ol.ac { list-style: none; padding: 0; margin: 6px 0; }
+  ol.ac li { display: flex; gap: 6px; padding: 3px 6px; border-radius: 3px; margin-bottom: 2px; color: var(--muted); }
+  ol.ac li .mk { flex: 0 0 auto; width: 24px; font-family: Consolas, monospace; }
+  .brs, .notes { font-size: 11px; margin-top: 4px; }
+  .br { border-bottom: 1px dotted var(--muted); cursor: help; margin-right: 4px; }
+  .rpanel { position: fixed; top: 0; right: 0; bottom: 0; width: 340px; max-width: 100%; background: var(--panel-bg); color: var(--text); border-left: 1px solid var(--line); overflow-y: auto; transform: translateX(100%); transition: transform .2s; z-index: 20; font-size: 12px; }
+  body.rp-open .rpanel { transform: none; }
+  @media (min-width: 900px) { body.rp-open .wrap, body.rp-open .topbar { margin-right: 340px; } }
+  @media (max-width: 899px) {
+    .rpanel { top: auto; width: 100%; height: 50vh; border-left: none; border-top: 2px solid var(--hl); transform: translateY(100%); box-shadow: 0 -4px 16px rgba(0,0,0,.25); }
+    body.rp-open { padding-bottom: 50vh; }
+  }
+  .rp-head { position: sticky; top: 0; background: var(--panel-bg); border-bottom: 1px solid var(--line); padding: 10px 12px; z-index: 1; }
+  .rp-head .t { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .rp-head b { font-size: 13px; }
+  .rp-hint { color: var(--muted); font-size: 11px; margin-top: 4px; }
+  .rq { border-bottom: 1px solid var(--line); padding: 8px 12px; cursor: pointer; scroll-margin-top: 84px; }
+  .rq:hover { background: var(--row-alt); }
+  .rq.on { background: var(--tab); box-shadow: inset 3px 0 0 var(--hl); }
+  .rq .h { display: flex; gap: 6px; align-items: baseline; }
+  .rq .h .rb { margin-left: 0; }
+  .rq .h b { flex: 1; }
+  .rq .st { margin: 4px 0; }
+  .rq .loc { font-size: 11px; color: var(--muted); }
+  .rq .loc span { display: inline-block; border: 1px solid var(--line); border-radius: 8px; padding: 0 6px; margin: 2px 4px 0 0; }
+  .rq .loc span[data-go] { cursor: pointer; }
+  .rq .loc span[data-go]:hover { border-color: var(--hl); }
+  .rq .loc span.here { border-color: var(--hl); color: var(--hl); font-weight: bold; }
+  .rq .h .cnt { color: var(--muted); font-size: 11px; }
+  .rq .x { display: none; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); cursor: default; }
+  .rq.on .x { display: block; }
+  .rq.on .st { font-weight: bold; }
+  .rq .meta { color: var(--muted); font-size: 11px; }
+  .rq .away { margin: 6px 0; color: var(--oq); font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <b>CJ E-HR</b>
+  <span class="links"><u>개인정보</u> › 결재관리 › 통합결재함 (해외근무자 메뉴 A_PERSON1604 도 같은 화면) <button class="rtoggle" id="rpToggle" title="요구사항 패널 열기/닫기">요구사항</button></span>
+</div>
+<div class="wrap">
+  <div class="crumb">개인정보 › 결재관리 › 통합결재함 — /ehr/common/approval/approvalList/page.fo</div>
+  <div class="note">
+    <div class="note-h">
+      <b>기존 화면 재현 목업 · PERSON1604 통합결재함</b>
+      <span><label><input type="checkbox" id="optFname"> JSP 입력명·데이터 열 표시</label></span>
+    </div>
+    <dl>
+      <dt>재현 범위</dt><dd>JSP·스크린샷 그대로: 메뉴 없는 통합결재함 창(제목 'HR 결재함'), 검색 상자, 결재진행함·반려·승인·수신/참조함·상신함 탭, 목록 열, 승인·반려 버튼, 결재선 표. 분석대로 움직이는 것: 진입 기본값·90일(BR-002), 기간 검사(BR-003), 탭별 조회 대상(BR-005·006·009·010), 탭 건수(BR-007), 목록·체크박스 규칙(BR-008), 탭 전환(BR-011), PC-OFF 연장근무 대기 건(BR-012·013), 결재선(BR-014), 상세보기 창 크기·필수 URL(BR-015), 일괄 승인·반려(BR-016·017), 연장근무 상세·승인·반려(BR-018·019), 도움말(BR-020, 화면에 버튼 없음), 일시 7초 전환(BR-021). 분석 범위 밖이라 뺀 것: 문서구분별 상세 화면 본문(스크린샷 _4 모양의 샘플 1종으로 대신), 공통 결재 서비스 내부 처리(처리 로그에 이름만), PC-OFF 시스템 자체.</dd>
+      <dt>데이터</dt><dd>전부 샘플 — 로그인 사용자 '나샘플(S000001)'. 결재진행함 3건(다건 결재 불가 1건 포함) + 앞 결재자 미승인으로 빠지는 1건, 90일 밖 1건, 반려·승인·수신/참조·상신 문서, PC-OFF 연장근무 대기 2건(기존·신규 시스템 각 1). 코드 이름(대기·승인·반려·기안·진행·완료 등)은 XLAT 를 받지 못해 JSP 주석·스크린샷 글자를 씁니다. 메시지 상자는 브라우저 알림·확인 창으로 띄웁니다.</dd>
+      <dt>표시</dt><dd><span class="key"><a class="rb" style="margin-left:0;cursor:default">REQ-nnn</a> 요구사항 — 누르면 해당 영역에 초점, 패널에 상세 (Esc·바깥 클릭으로 닫기)</span><span class="key"><span class="oq">OQ-nn</span> 미해결 질문</span><span class="key">(목업 설명) 기존 화면에 없는 목업 안내</span><span class="key">팝업·새 창은 화면 아래에 펼쳐 보입니다</span></dd>
+      <dt>출처</dt><dd><span class="src">원천 processed/ehr/개인정보(PERSON)/결재관리/통합결재함(PERSON1604) · JSP approvalList.jsp·abFXPCOFFDtlPopup.jsp·approvalGuide.jsp · 컨트롤러 ApprovalListController.java·ApprovalDetailController.java · 스크린샷 PERSON1604_1~4.png<br>분석 analysis/ehr/개인정보(PERSON)/결재관리/통합결재함(PERSON1604)</span></dd>
+    </dl>
+  </div>
+
+  <div class="sim" id="simBar" data-common>
+    <div class="sh"><b>목업 전용 조건</b><span>(서버·외부 시스템 응답을 바꿈 — 바꾸면 현재 탭을 다시 조회)</span></div>
+    <div class="opts">
+      <label title="설정 apprrovalInterface.status (BR-PERSON1604-012)">기존 PC-OFF <select id="sOld"><option value="on">켜짐</option><option value="off">꺼짐</option><option value="fail">응답 success=false</option></select></label>
+      <label title="설정 apprrovalInterface.hrpcoff.status (BR-PERSON1604-012)">신규 HR PC-OFF <select id="sNew"><option value="on">켜짐</option><option value="off">꺼짐</option><option value="fail">응답 success=false</option></select></label>
+      <label title="saveAppr.fo·saveReturn.fo 결과 (BR-PERSON1604-017)">결재 저장 결과 <select id="sSave"><option value="ok">성공</option><option value="err">오류(공통 서비스 검사 실패)</option></select></label>
+      <label title="PC-OFF 상태 조회 aprv_status (BR-PERSON1604-019)">PC-OFF 결재상태 <select id="sPst"><option value="0">0 처리 가능</option><option value="4">4 상신 취소(불가)</option><option value="parse">응답 해석 실패</option></select></label>
+      <label title="PC-OFF 승인·반려 응답 (BR-PERSON1604-019)">PC-OFF 처리 응답 <select id="sPres"><option value="true">success=true</option><option value="false">success=false</option><option value="empty">빈 응답</option></select></label>
+      <button id="sGuide" title="guidePopup.fo 직접 열기 (BR-PERSON1604-020)">(목업 설명) 도움말 URL 직접 열기</button>
+    </div>
+  </div>
+
+  <!-- ================= 통합결재함 (approvalList.jsp) ================= -->
+  <div class="scr" id="scrMain">
+    <div class="ttl" data-req="REQ-PERSON1604-001:1,2 REQ-PERSON1604-003:1 REQ-PERSON1604-010:3 REQ-PERSON1604-014:1">
+      <h1>HR 결재함<span class="fname">24001|1651 앞에 'HR '</span></h1>
+      <span><a class="rb" data-rb="REQ-PERSON1604-001">REQ-001</a><a class="rb" data-rb="REQ-PERSON1604-014">REQ-014</a> <span class="oq" title="">OQ-05</span></span>
+    </div>
+    <div class="inner">
+      <div class="searchwrap" data-req="REQ-PERSON1604-003:1">
+        <ul>
+          <li data-req="REQ-PERSON1604-002:1 REQ-PERSON1604-003:3">
+            <span class="t_txt">ㆍ요청일자 <a class="rb" data-rb="REQ-PERSON1604-002">REQ-002</a><a class="rb" data-rb="REQ-PERSON1604-003">REQ-003</a></span>
+            <span class="dp"><input id="dStart" maxlength="10"><span class="cal">▦</span></span><span class="tilde">~</span><span class="dp"><input id="dEnd" maxlength="10"><span class="cal">▦</span></span>
+            <span class="fname">APPROVAL_SEARCH_START_DATE ~ APPROVAL_SEARCH_END_DATE</span>
+          </li>
+          <li data-req="REQ-PERSON1604-002:2 REQ-PERSON1604-003:2">
+            <span class="t_txt">ㆍ기안문서구분</span>
+            <select id="selMajor"></select>
+            <span class="fname">ZZ_REQ_MAJOR (Q-PERSON1604-008)</span>
+          </li>
+          <li data-req="REQ-PERSON1604-002:2 REQ-PERSON1604-003:4,5">
+            <span class="t_txt">ㆍ검색 조건 <span class="oq" title="">OQ-02</span></span>
+            <span class="cond"><select disabled><option>기안자</option></select><input id="inDrafter"></span>
+            <span class="fname">APPROVAL_SEARCH_DRAFTER</span>
+          </li>
+        </ul>
+        <button class="btn_search" id="btnSearch" data-req="REQ-PERSON1604-003:4">조회</button>
+      </div>
+
+      <div class="list_count" data-req="REQ-PERSON1604-002:3 REQ-PERSON1604-004:1,6 REQ-PERSON1604-006:5,11 REQ-PERSON1604-007:5 REQ-PERSON1604-008:5">
+        <ul id="tabBar"></ul>
+        <div class="ot-help" id="otHelp" data-req="REQ-PERSON1604-005:4"></div>
+      </div>
+
+      <div class="tabp" id="tabN"></div>
+      <div class="tabp" id="tabC" hidden></div>
+      <div class="tabp" id="tabY" hidden></div>
+      <div class="tabp" id="tabR" hidden></div>
+      <div class="tabp" id="tabAR" hidden></div>
+
+      <div class="dtl" id="dtlArea" data-req="REQ-PERSON1604-009:1,2,3,4 REQ-PERSON1604-005:7">
+        <div class="gscroll"><table class="nt" id="dtlTable"></table></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 결재처리 레이어 팝업 (approvalConfirmPopup) ================= -->
+  <section class="pop" id="popAppr" hidden data-req="REQ-PERSON1604-012:3">
+    <div class="ph"><span>레이어 팝업 #approvalPopup (목업 설명: 실제로는 화면 위 마스크와 함께 뜸)</span><a class="rb" data-rb="REQ-PERSON1604-012">REQ-012</a></div>
+    <div class="lay-title"><span>결재처리</span><a id="apX" style="color:#fff" data-req="REQ-PERSON1604-012:8">x</a></div>
+    <div class="pb">
+      <div class="gscroll" style="max-height:200px;overflow-y:auto"><table class="nt" id="apList"></table></div>
+      <div class="lay-btns" data-req="REQ-PERSON1604-012:4,5,6,7 REQ-PERSON1604-001:3">
+        <select disabled><option>결재자의견</option></select>
+        <input class="txt" id="apMemo" placeholder="결재자 의견을 입력하세요.">
+        <button id="apGo" class="btn_approve" style="height:30px">승인</button>
+        <button id="apClose" data-req="REQ-PERSON1604-012:8">닫기</button>
+      </div>
+      <p class="red" style="margin:4px 0 0">※ 위 결재자의견이 일괄로 반영됩니다. 개별처리는 결재 상세보기를 통해 진행해주세요.</p>
+    </div>
+  </section>
+
+  <!-- ================= 결재 상세 팝업 (approvalDetail/page.fo — 문서별 JSP, 스크린샷 _4) ================= -->
+  <section class="pop" id="popDetail" hidden data-req="REQ-PERSON1604-011:3,4">
+    <div class="ph"><span id="pdHead">새 창 detailApprovalPopup</span><span><a class="rb" data-rb="REQ-PERSON1604-011">REQ-011</a> <button id="pdX">창 닫기</button></span></div>
+    <div class="pb" id="pdBody"></div>
+  </section>
+
+  <!-- ================= 연장근무 신청 상세 팝업 (abFXPCOFFDtlPopup.jsp) ================= -->
+  <section class="pop" id="popPcoff" hidden>
+    <div class="ph"><span id="ppHead">새 창 760×600 — pcoffDetailPopup.fo</span><span><a class="rb" data-rb="REQ-PERSON1604-013">REQ-013</a> <span class="oq" title="">OQ-01</span></span></div>
+    <div class="pb">
+      <div data-req="REQ-PERSON1604-013:2">
+        <h3>연장근무 신청</h3>
+        <table class="pt">
+          <tr><th>신청자 정보</th><td colspan="3" id="ppEmp"></td></tr>
+          <tr><th>근무일</th><td colspan="3" id="ppYmd"></td></tr>
+          <tr><th>시작시간</th><td id="ppSta"></td><th>종료시간</th><td id="ppEnd"></td></tr>
+          <tr><th>근무사유</th><td colspan="3" id="ppRsn"></td></tr>
+        </table>
+      </div>
+      <div class="pbtn" data-req="REQ-PERSON1604-013:3,4,5 REQ-PERSON1604-001:4">
+        <button id="ppOk">✓ 승인</button><button id="ppNo">↺ 반려</button><button id="ppClose">✕ 닫기</button>
+        <span class="oq" title="">OQ-06</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 도움말 팝업 (approvalGuide.jsp) ================= -->
+  <section class="pop" id="popGuide" hidden data-req="REQ-PERSON1604-014:2">
+    <div class="ph"><span>새 창 1070×720 — guidePopup.fo (HR전자결재 도움말)</span><span><a class="rb" data-rb="REQ-PERSON1604-014">REQ-014</a> <button id="pgX">창 닫기</button></span></div>
+    <div class="pb"><div id="manual"></div></div>
+  </section>
+
+  <section class="log" id="logArea" data-common>
+    <h2>처리 로그 (목업 전용) — page.fo · search.fo · saveAppr/saveReturn.fo · pcoff*.fo</h2>
+    <div class="gscroll"><table class="g"><thead><tr><th>#</th><th>시각</th><th>요청·처리</th></tr></thead><tbody id="logBody"></tbody></table></div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<aside class="rpanel" id="rpanel" aria-label="요구사항">
+  <div class="rp-head">
+    <div class="t"><b>요구사항 (requirements.json)</b><button id="rpClose" title="닫기">✕</button></div>
+    <div class="rp-hint">요구사항을 누르면 해당 화면 영역에 초점을 맞추고 상세 내용을 펼칩니다. 화면 위치를 누르면 그 화면으로 갑니다.</div>
+  </div>
+  <div id="rpList"></div>
+</aside>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  let focus = null, ready = false;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const short = id => id.replace(/^REQ-[A-Z0-9_]+-/, 'REQ-');
+  const R = n => 'REQ-PERSON1604-' + n;
+  const rb = n => '<a class="rb" data-rb="' + R(n) + '">REQ-' + n + '</a>';
+  const dr = s => ' data-req="' + s.split(' ').map(x => R(x)).join(' ') + '"';
+  const oq = n => '<span class="oq" title="' + esc('OQ-PERSON1604-' + n + ': ' + (OQS['OQ-PERSON1604-' + n] || '')) + '">OQ-' + n + '</span>';
+  const fn = s => '<span class="fname">' + esc(s) + '</span>';
+  $('optFname').onchange = e => { document.body.classList.toggle('show-fname', e.target.checked); refresh(); };
+
+  // ---- 요구사항 (requirements.json 그대로 — 스크립트로 주입) ----
+  const REQS = /*__REQS__*/[
+  {
+    "id": "REQ-PERSON1604-001",
+    "title": "화면·기능별 사용 권한",
+    "statement": "시스템은 통합결재함 화면과 조회·승인·반려·도움말·연장근무 상세·연장근무 처리 기능을 각각 권한이 있는 사용자에게만 허용해야 한다.",
+    "actor": "시스템",
+    "acceptance_criteria": [
+      "[통합결재함] 메뉴 권한이 없으면 화면이 열리지 않는다",
+      "[통합결재함] 개인정보 메뉴와 해외근무자 메뉴의 통합결재함은 같은 화면·같은 동작이다",
+      "[결재처리 팝업] 승인·반려 기능 권한이 따로 확인된다",
+      "[연장근무 신청 상세 팝업] 상세 열기와 승인·반려 처리 권한이 따로 확인된다"
+    ],
+    "rules": [
+      "BR-PERSON1604-001"
+    ],
+    "priority": "필수",
+    "notes": "하위 액션 PERSON1604_01 조회·_02 승인·_03 반려·_04 도움말·_05 PC-OFF 상세·_06 PC-OFF 저장, 별칭 A_PERSON1604(processed README)"
+  },
+  {
+    "id": "REQ-PERSON1604-002",
+    "title": "진입 기본 조회",
+    "statement": "시스템은 화면에 들어오면 최근 90일 기간으로 결재진행함을 조회 버튼 없이 바로 보여 줘야 한다.",
+    "actor": "시스템",
+    "acceptance_criteria": [
+      "[통합결재함 검색 영역] 요청일자 시작은 오늘에서 90일 전, 종료는 오늘로 채워져 있다",
+      "[통합결재함 검색 영역] 기안문서구분은 '전체', 기안자 칸은 비어 있다",
+      "[결재진행함 탭] 결재진행함 탭이 선택된 상태로 목록과 탭 건수가 바로 보인다"
+    ],
+    "rules": [
+      "BR-PERSON1604-002"
+    ],
+    "priority": "중요",
+    "notes": "approvalList.jsp init·onload"
+  },
+  {
+    "id": "REQ-PERSON1604-003",
+    "title": "결재 문서 조회 조건",
+    "statement": "사용자는 요청일자 기간·기안문서구분·기안자로 지금 선택한 탭의 결재 문서를 다시 조회할 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[통합결재함 검색 영역] 화면 제목은 'HR 결재함' 이고, 검색 영역에 '요청일자'(시작·종료 달력) · '기안문서구분'(드롭다운) · '검색 조건'(비활성 '기안자' 상자 + 입력칸) 과 조회 버튼이 한 줄로 보인다",
+      "[통합결재함 검색 영역] 기안문서구분 목록은 '전체' 와 사용 중인 문서 대분류(사용자 언어 이름, 코드 순)이다",
+      "[통합결재함 검색 영역] 요청일자가 올바른 날짜가 아니거나 종료일이 시작일보다 앞이면 '날짜형식이 유효하지 않습니다.' 를 띄우고 조회하지 않는다. 달력을 닫을 때도 같은 검사를 하고 달력을 다시 연다",
+      "[통합결재함 검색 영역] 조회 버튼이나 기안자 칸의 Enter 는 지금 선택된 탭을 같은 조건으로 다시 조회한다",
+      "[통합결재함 검색 영역] 기안자는 이름 일부만 넣어도 포함 검색되며(대소문자 무시), 결재진행함·반려·승인 탭에만 적용된다(수신/참조함·상신함은 기안자 조건 무시 — 현업 확인)"
+    ],
+    "rules": [
+      "BR-PERSON1604-003",
+      "BR-PERSON1604-004",
+      "BR-PERSON1604-021"
+    ],
+    "priority": "필수",
+    "notes": "검색 영역 approvalList.jsp 102-125, 기안문서구분 commonSelectService.getReqMajorist, OQ-PERSON1604-02"
+  },
+  {
+    "id": "REQ-PERSON1604-004",
+    "title": "결재진행함 목록",
+    "statement": "사용자는 결재진행함 탭에서 지금 자기 차례인 결재 대기 문서와 탭별 건수를 볼 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[결재진행함 탭] 탭은 '결재진행함 (n)' · '반려 (n)' · '승인 (n)' · '수신/참조함' · '상신함' 순서로 보이고, 결재진행함·반려·승인에만 건수가 붙는다",
+      "[결재진행함 탭] 내가 결재자·합의자·조정자이고 아직 처리하지 않았으며, 첫 순서이거나 바로 앞 결재자가 승인한 기안·진행 중 문서만 나온다",
+      "[결재진행함 탭] 결재선 요청일이 조회 기간 안인 문서만, 요청일 최신순으로 최대 100건 나온다",
+      "[결재진행함 탭] 열은 체크박스·결재상태(대기 배지)·기안제목·상세보기·기안자 '이름(사번)'·기안내용·부서·요청일자(등록 일시)·결재일시('-') 이다",
+      "[결재진행함 탭] 다건 결재가 허용된 문서는 체크박스를 고를 수 있고, 허용되지 않은 문서의 체크박스를 누르면 '상세보기를 통해서만 결재 가능합니다.' 가 뜨고 체크되지 않는다",
+      "[결재진행함 탭] 탭 건수는 같은 조회 조건의 전체 건수(100건 제한 없음)이고 '결재진행함' 건수에는 연장근무 대기 건수가 더해진다",
+      "[결재진행함 탭] 목록 아래에 승인·반려 버튼이 보인다",
+      "[결재진행함 탭] 문서가 없으면 '내역이 없습니다.' 가 보인다"
+    ],
+    "rules": [
+      "BR-PERSON1604-005",
+      "BR-PERSON1604-007",
+      "BR-PERSON1604-008",
+      "BR-PERSON1604-011"
+    ],
+    "priority": "필수",
+    "notes": "approvalListService.getApprovalList(ZZ_APPR_STAT=N)·getApprovalListCount, 스크린샷 PERSON1604_1.png(결재진행함 0건). OQ-PERSON1604-03·07"
+  },
+  {
+    "id": "REQ-PERSON1604-005",
+    "title": "연장근무 신청 대기 건 함께 보기",
+    "statement": "시스템은 결재진행함에 근무시간 관리(PC-OFF) 시스템의 연장근무 신청 결재 대기 건을 함께 보여 줘야 한다.",
+    "actor": "시스템",
+    "acceptance_criteria": [
+      "[결재진행함 탭] 기안문서구분이 '전체' 또는 근무시간관리일 때만, 연동이 켜진 PC-OFF 시스템(기존·신규)의 대기 건을 가져와 목록 맨 위에 보인다",
+      "[결재진행함 탭] 연장근무 행은 결재상태 '대기', 기안제목 '근무시간관리[연장근무 신청]', 기안내용 '근무일 시작시각 ~ 종료시각', 결재일시 '-' 로 보인다",
+      "[결재진행함 탭] 연장근무 행의 체크박스를 누르면 '상세보기를 통해서만 결재 가능합니다.' 가 뜨고 일괄 결재에 넣을 수 없다",
+      "[결재진행함 탭] 연장근무 행이 있으면 탭 오른쪽에 '근무시간관리[연장근무 신청]은 결재대기만 표시됩니다.' · '완료건은 근무시간 관리 시스템에서 확인해주세요.' 가 보인다",
+      "[결재진행함 탭] 기안자를 입력하면 이름이 정확히 같은 연장근무 행만 남는다(탭 건수는 그대로)",
+      "[결재진행함 탭] 연동이 실패하면 연장근무 행 없이 HR 결재 문서만 보인다",
+      "[결재선 영역] 연장근무 행을 누르면 결재선 대신 '연장근무 신청에 대한 결재상세내역은 근무시간 관리 시스템에서 확인바랍니다.' 가 보인다"
+    ],
+    "rules": [
+      "BR-PERSON1604-012",
+      "BR-PERSON1604-013"
+    ],
+    "priority": "중요",
+    "notes": "ApprovalListController.search PC-OFF 분기, 설정 값 미수령. OQ-PERSON1604-01·03"
+  },
+  {
+    "id": "REQ-PERSON1604-006",
+    "title": "반려·승인 탭 목록",
+    "statement": "사용자는 반려·승인 탭에서 자기가 반려하거나 승인한 문서를 볼 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[반려 탭] '반려 (n)' 은 내가 반려한 결재선의 문서를 보여 준다(문서의 최종 결과가 아님)",
+      "[반려 탭] 조회 기간·기안문서구분·기안자 조건, 최신순 최대 100건은 결재진행함과 같다",
+      "[반려 탭] 열은 결재진행함과 같고 체크박스는 없으며, 결재상태는 반려 배지, 결재일시는 내가 처리한 일시(없으면 'ㆍ')이다",
+      "[반려 탭] 승인·반려 버튼은 보이지 않는다",
+      "[반려 탭] 이 탭을 조회하면 결재진행함 건수는 연장근무 대기 건수를 빼고 다시 표시된다",
+      "[반려 탭] 문서가 없으면 '내역이 없습니다.' 가 보인다",
+      "[승인 탭] '승인 (n)' 은 내가 승인한 결재선의 문서를 보여 준다(문서의 최종 결과가 아님)",
+      "[승인 탭] 조회 기간·기안문서구분·기안자 조건, 최신순 최대 100건은 결재진행함과 같다",
+      "[승인 탭] 열은 결재진행함과 같고 체크박스는 없으며, 결재상태는 승인 배지, 결재일시는 내가 처리한 일시(없으면 'ㆍ')이다",
+      "[승인 탭] 승인·반려 버튼은 보이지 않는다",
+      "[승인 탭] 이 탭을 조회하면 결재진행함 건수는 연장근무 대기 건수를 빼고 다시 표시된다",
+      "[승인 탭] 문서가 없으면 '내역이 없습니다.' 가 보인다"
+    ],
+    "rules": [
+      "BR-PERSON1604-006",
+      "BR-PERSON1604-007",
+      "BR-PERSON1604-008",
+      "BR-PERSON1604-011"
+    ],
+    "priority": "필수",
+    "notes": "getApprovalList(ZZ_APPR_STAT=C·Y) UNION 부분, 스크린샷 PERSON1604_2.png(승인 16건)"
+  },
+  {
+    "id": "REQ-PERSON1604-007",
+    "title": "수신/참조함 목록",
+    "statement": "사용자는 수신/참조함 탭에서 자기가 수신자·참조자로 지정된 문서와 그 진행상태를 볼 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[수신/참조함 탭] 내가 수신자 또는 참조자인 문서가 결재선 요청일 기간·기안문서구분 조건으로 최신순 최대 100건 나온다",
+      "[수신/참조함 탭] 결재상태 열은 문서 진행상태(기안·진행·반려·삭제·취소·완료) 배지이다",
+      "[수신/참조함 탭] 기안자는 '이름(사번)', 결재일시는 '-' 이고, 체크박스와 부서 값은 없으며 '부서' 머리글이 비워진다",
+      "[수신/참조함 탭] 상세보기 버튼으로 문서 상세 팝업을 열 수 있다",
+      "[수신/참조함 탭] 탭에 건수가 표시되지 않고 승인·반려 버튼이 보이지 않는다",
+      "[수신/참조함 탭] 문서가 없으면 '내역이 없습니다.' 가 보인다"
+    ],
+    "rules": [
+      "BR-PERSON1604-009",
+      "BR-PERSON1604-011"
+    ],
+    "priority": "중요",
+    "notes": "getApprovalReferList. 기안자 조건 미적용은 OQ-PERSON1604-02"
+  },
+  {
+    "id": "REQ-PERSON1604-008",
+    "title": "상신함 목록",
+    "statement": "사용자는 상신함 탭에서 자기가 상신한 문서와 그 진행상태·최종 결재일시를 볼 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[상신함 탭] 내가 기안한 문서가 문서 요청일 기간·기안문서구분 조건으로 등록 일시 최신순 최대 100건 나온다",
+      "[상신함 탭] 결재상태 열은 문서 진행상태 배지(예: 완료)이다",
+      "[상신함 탭] 기안자는 본인 이름만(사번 없음), 상세보기는 '-', 체크박스는 없고 '부서' 머리글이 비워진다",
+      "[상신함 탭] 결재일시는 반려·완료 문서면 마지막으로 승인·반려한 결재자의 처리 일시, 기안·진행 중이면 '-' 이다",
+      "[상신함 탭] 연장근무 신청 건은 나오지 않고, 탭 건수·승인·반려 버튼이 없다",
+      "[상신함 탭] 문서가 없으면 '내역이 없습니다.' 가 보인다"
+    ],
+    "rules": [
+      "BR-PERSON1604-010",
+      "BR-PERSON1604-011"
+    ],
+    "priority": "중요",
+    "notes": "getMyApprovalList, 스크린샷 PERSON1604_3.png(상신함). OQ-PERSON1604-04"
+  },
+  {
+    "id": "REQ-PERSON1604-009",
+    "title": "결재선·의견 보기",
+    "statement": "사용자는 목록에서 문서 행을 눌러 그 문서의 결재선과 결재자 의견을 볼 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[결재선 영역] 목록 아래 표의 열은 결재순서·결재구분·결재자 기본정보·결재자의견·결재상태·결재일시 이다",
+      "[결재선 영역] 아무 행도 고르지 않았거나 탭을 바꾸거나 다시 조회하면 '상단 결재테이블의 행을 클릭하면 결재선과 의견을 볼 수 있습니다.' 가 보인다",
+      "[결재선 영역] 행을 누르면 그 행이 강조되고 결재선 전체가 표시 순서대로 나오며 화면이 결재선 표로 이동한다",
+      "[결재선 영역] 기안자 행은 결재순서 '-'·결재상태 'ㆍ' 이고, 결재자 기본정보는 '이름[부서/회사]', 결재하지 않은 행의 결재일시는 'ㆍ' 이다"
+    ],
+    "rules": [
+      "BR-PERSON1604-014"
+    ],
+    "priority": "중요",
+    "notes": "approvalListService.getMyApprovalListDtl, 스크린샷 1~3 하단 결재선 영역(안내 문구 상태)"
+  },
+  {
+    "id": "REQ-PERSON1604-010",
+    "title": "목록 일시 표시 전환",
+    "statement": "시스템은 목록·결재선의 요청일자·결재일시를 실제 일시와 경과 시간으로 번갈아 보여 줘야 한다.",
+    "actor": "시스템",
+    "acceptance_criteria": [
+      "[결재진행함 탭] 요청일자·결재일시 칸은 7초마다 실제 일시와 'n일 전' 같은 경과 시간(사용자 언어)으로 번갈아 바뀐다",
+      "[결재선 영역] 결재일시 칸도 같은 방식으로 바뀌고, 칸을 누르면 바로 바뀐다",
+      "[통합결재함] 목록 글자를 끌어 선택·복사할 수 있다",
+      "[반려 탭] 요청일자·결재일시 칸은 결재진행함과 같이 7초마다 실제 일시와 경과 시간으로 번갈아 바뀐다",
+      "[승인 탭] 요청일자·결재일시 칸은 결재진행함과 같이 7초마다 실제 일시와 경과 시간으로 번갈아 바뀐다",
+      "[수신/참조함 탭] 요청일자 칸은 결재진행함과 같이 7초마다 실제 일시와 경과 시간으로 번갈아 바뀐다",
+      "[상신함 탭] 요청일자·결재일시 칸은 결재진행함과 같이 7초마다 실제 일시와 경과 시간으로 번갈아 바뀐다"
+    ],
+    "rules": [
+      "BR-PERSON1604-021"
+    ],
+    "priority": "선택",
+    "notes": "approvalList.jsp changeDateTime·setInterval 7000"
+  },
+  {
+    "id": "REQ-PERSON1604-011",
+    "title": "문서 상세보기",
+    "statement": "사용자는 상세보기 버튼으로 문서구분에 맞는 결재 상세 화면을 새 창으로 열 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[결재진행함 탭] 상세보기를 누르면 행 선택(결재선 조회)과 별개로 상세 팝업이 열린다",
+      "[결재진행함 탭] 문서구분에 결재 화면 주소가 없으면 '결재URL' 필수 입력 오류가 나고 창이 열리지 않는다",
+      "[결재 상세 팝업] 창 크기는 문서구분 설정의 너비·높이(없으면 600×300)이고, 출장·특정 복리후생·근무 문서는 스크롤바가 늘 보인다",
+      "[결재 상세 팝업] 문서구분별 상세 화면(예: 휴가/근태 '결재처리(상세화면)' — 기안자·대상자·구분·신청기간·사유·결재자의견·닫기)이 열린다",
+      "[반려 탭] 상세보기를 누르면 결재진행함과 같이 상세 팝업이 열린다(결재 화면 주소가 없으면 '결재URL' 필수 입력 오류)",
+      "[승인 탭] 상세보기를 누르면 결재진행함과 같이 상세 팝업이 열린다(결재 화면 주소가 없으면 '결재URL' 필수 입력 오류)",
+      "[수신/참조함 탭] 상세보기를 누르면 결재진행함과 같이 상세 팝업이 열린다(결재 화면 주소가 없으면 '결재URL' 필수 입력 오류)"
+    ],
+    "rules": [
+      "BR-PERSON1604-015"
+    ],
+    "priority": "필수",
+    "notes": "approvalDetail/page.fo → approvaldetail.contents.<ZZ_URL> 문서별 JSP(이 단위 밖), 스크린샷 PERSON1604_4.png(휴가/근태 상세)"
+  },
+  {
+    "id": "REQ-PERSON1604-012",
+    "title": "일괄 승인·반려",
+    "statement": "사용자는 결재진행함에서 다건 결재가 허용된 문서를 여러 건 골라 같은 의견으로 한꺼번에 승인하거나 반려할 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[결재진행함 탭] 머리글 체크박스는 다건 결재 가능 문서만 모두 선택·해제한다",
+      "[결재진행함 탭] 아무 문서도 고르지 않고 승인·반려를 누르면 '다건 결재시 결재 항목 체크 후 승인/반려가 가능합니다.' 가 뜬다",
+      "[결재처리 팝업] 제목 '결재처리', 고른 문서의 기안제목·기안자·기안내용·요청일자(경과 시간), 결재자의견 입력칸('결재자 의견을 입력하세요.'), 누른 버튼(승인 또는 반려)·닫기, 빨간 안내 '※ 위 결재자의견이 일괄로 반영됩니다. 개별처리는 결재 상세보기를 통해 진행해주세요.' 가 보인다",
+      "[결재처리 팝업] 승인은 '승인 처리하시겠습니까?', 반려는 '반려 처리하시겠습니까?' 확인 후 진행한다",
+      "[결재처리 팝업] 반려는 결재자의견이 비어 있으면 '결재자의견' 필수 입력 오류가 나고, 승인은 의견 없이 처리된다",
+      "[결재처리 팝업] 고른 문서 모두에 같은 의견으로 결재 공통 처리(처리 가능 검사·후속 처리·메일·푸시)가 적용되고, 한 건이라도 실패하면 모두 처리되지 않는다",
+      "[결재처리 팝업] 처리되면 팝업이 닫히고 결재진행함이 다시 조회된다",
+      "[결재처리 팝업] x·닫기·ESC 로 처리 없이 닫힌다"
+    ],
+    "rules": [
+      "BR-PERSON1604-016",
+      "BR-PERSON1604-017"
+    ],
+    "priority": "필수",
+    "notes": "saveAppr.fo → FN-EHR.ApprovalCommService-saveApproval, saveReturn.fo → FN-EHR.ApprovalCommService-saveReturn"
+  },
+  {
+    "id": "REQ-PERSON1604-013",
+    "title": "연장근무 신청 상세·승인·반려",
+    "statement": "사용자는 연장근무 신청 대기 건의 상세를 보고 근무시간 관리 시스템에 승인 또는 반려를 보낼 수 있어야 한다.",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[결재진행함 탭] 연장근무 행의 상세보기를 누르면 연장근무 신청 상세 팝업(760×600)이 열린다",
+      "[연장근무 신청 상세 팝업] 제목 '연장근무 신청' 아래 신청자 정보 '이름(사번)', 근무일 '날짜 (요일)', 시작시간, 종료시간(같은 날이면 시각만), 근무사유와 승인·반려·닫기 버튼이 보인다",
+      "[연장근무 신청 상세 팝업] 승인·반려는 확인 메시지 후 먼저 근무시간 관리 시스템의 결재상태를 확인해, 처리할 수 없는 상태(상신 취소 등)면 보내지 않는다. 상태 응답을 읽지 못하면 처리 가능으로 보고 보낸다(현업 확인 필요)",
+      "[연장근무 신청 상세 팝업] 처리되면 '승인완료' 또는 '반려하셨습니다.' 알림 뒤 통합결재함이 다시 조회되고 창이 닫힌다",
+      "[연장근무 신청 상세 팝업] 이미 처리·취소된 건이면 '결재가 완료되거나 취소된 건 입니다.', 상대 시스템이 실패를 돌려주면 '접속부하로 인해 처리가 지연되고 있습니다. 잠시 후 시도해주세요.' 가 뜬다"
+    ],
+    "rules": [
+      "BR-PERSON1604-018",
+      "BR-PERSON1604-019"
+    ],
+    "priority": "중요",
+    "notes": "abFXPCOFFDtlPopup.jsp, pcoffDetailPopup.fo·pcoffSave.fo. OQ-PERSON1604-01·06"
+  },
+  {
+    "id": "REQ-PERSON1604-014",
+    "title": "HR 결재 도움말",
+    "statement": "시스템은 도움말 주소로 요청하면 HR 전자결재 도움말 본문을 새 창으로 보여 줘야 한다(화면에 여는 버튼은 없고, 제공 여부는 현업 확인 필요).",
+    "actor": "통합결재함 메뉴 권한 사용자(권한 목록 없음, 확인 필요)",
+    "acceptance_criteria": [
+      "[통합결재함] 현재 화면 상단에는 도움말 버튼이 없다",
+      "[도움말 팝업] 열면 콘텐츠 관리에 이 화면용으로 등록된 도움말 본문이 1070×720 창에 그대로 보인다"
+    ],
+    "rules": [
+      "BR-PERSON1604-020"
+    ],
+    "priority": "선택",
+    "notes": "guidePopup.fo PAGEID PERSON1604_04, 버튼 주석. OQ-PERSON1604-05"
+  }
+];
+  const BR_TITLES = /*__BRS__*/{
+  "BR-PERSON1604-001": "화면·기능별 URL 권한",
+  "BR-PERSON1604-002": "진입 기본 조회 조건",
+  "BR-PERSON1604-003": "조회 기간 검사",
+  "BR-PERSON1604-004": "기안문서구분 목록",
+  "BR-PERSON1604-005": "결재진행함 조회 대상",
+  "BR-PERSON1604-006": "반려·승인 탭 조회 대상",
+  "BR-PERSON1604-007": "탭 건수",
+  "BR-PERSON1604-008": "결재진행함·반려·승인 목록 표시",
+  "BR-PERSON1604-009": "수신/참조함 조회 대상과 표시",
+  "BR-PERSON1604-010": "상신함 조회 대상과 표시",
+  "BR-PERSON1604-011": "탭 전환 시 화면 바뀜",
+  "BR-PERSON1604-012": "PC-OFF 연장근무 대기 건 조회 연동",
+  "BR-PERSON1604-013": "PC-OFF 행 표시와 거르기",
+  "BR-PERSON1604-014": "결재선·의견 표시",
+  "BR-PERSON1604-015": "문서 상세보기 팝업",
+  "BR-PERSON1604-016": "일괄 결재 대상 선택과 결재처리 팝업",
+  "BR-PERSON1604-017": "일괄 승인·반려 처리",
+  "BR-PERSON1604-018": "연장근무 신청 상세 팝업",
+  "BR-PERSON1604-019": "연장근무 신청 승인·반려",
+  "BR-PERSON1604-020": "HR 결재 도움말",
+  "BR-PERSON1604-021": "일시 표시 전환과 키 조작"
+};
+  const OQS = /*__OQS__*/{
+  "OQ-PERSON1604-01": "새 통합결재함에서도 근무시간 관리 시스템(PC-OFF)의 연장근무 신청 대기 건을 함께 보여 주고 여기서 승인·반려하나요?",
+  "OQ-PERSON1604-02": "수신/참조함과 상신함에서도 기안자 검색이 적용되어야 하나요?",
+  "OQ-PERSON1604-03": "탭 건수와 목록이 어긋나는 경우(100건 초과, 연장근무 건 거르기)를 새 화면에서 어떻게 처리할까요?",
+  "OQ-PERSON1604-04": "상신함에서 내가 올린 문서의 상세보기를 열 수 있어야 하나요?",
+  "OQ-PERSON1604-05": "'HR 결재 도움말' 버튼을 새 화면에 두나요?",
+  "OQ-PERSON1604-06": "연장근무 신청의 결재상태를 확인하지 못했을 때 승인·반려를 진행해도 되나요?",
+  "OQ-PERSON1604-07": "목록의 '※ 일괄 결재 불가항목은 상세보기를 통해 결재해 주세요.' 안내를 어디에 보여 줘야 하나요?"
+};
+  document.querySelectorAll('.oq[title=""]').forEach(el => { const k = 'OQ-PERSON1604-' + el.textContent.slice(3); el.title = k + ': ' + (OQS[k] || ''); });
+
+  // ================= 메시지 (logic.json dependencies.messages 원문) =================
+  const MSG = {
+    nodata: '내역이 없습니다.', noselect: '상단 결재테이블의 행을 클릭하면 결재선과 의견을 볼 수 있습니다.',
+    pc1: '근무시간관리[연장근무 신청]은 결재대기만 표시됩니다.', pc2: '완료건은 근무시간 관리 시스템에서 확인해주세요.',
+    pcSel: '연장근무 신청에 대한 결재상세내역은 근무시간 관리 시스템에서 확인바랍니다.',
+    cfmA: '승인 처리하시겠습니까?', cfmR: '반려 처리하시겠습니까?', notSel: '다건 결재시 결재 항목 체크 후 승인/반려가 가능합니다.',
+    date: '날짜형식이 유효하지 않습니다.', onlyDetail: '상세보기를 통해서만 결재 가능합니다.', ok: '승인완료', rej: '반려하셨습니다.'
+  };
+  const say = m => window.alert(m);
+  const ask = m => window.confirm(m);
+  let toastT;
+  const toast = m => { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 2600); };
+  const LOG = [];
+  const log = t => { LOG.push({ at: new Date().toLocaleTimeString('ko-KR'), t }); renderLog(); };
+  function renderLog() {
+    $('logBody').innerHTML = LOG.length ? LOG.map((m, i) => '<tr><td class="n">' + (i + 1) + '</td><td class="t">' + esc(m.at) + '</td><td class="wrapc">' + esc(m.t) + '</td></tr>').reverse().join('')
+      : '<tr><td class="empty" colspan="3">아직 요청이 없습니다.</td></tr>';
+  }
+
+  // ================= 날짜 도우미 =================
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const ago = (days, h, m) => { const d = new Date(); d.setDate(d.getDate() - days); d.setHours(h == null ? 10 : h, m == null ? 0 : m, 17, 0); return d; };
+  const dts = d => ymd(d) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  function rel(s) {   // moment(...).fromNow() 대신 (사용자 로케일 한국어 가정)
+    const t = new Date(String(s).trim().replace(' ', 'T')); const sec = (Date.now() - t.getTime()) / 1000;
+    if (isNaN(sec)) return s;
+    if (sec < 45) return '몇 초 전'; if (sec < 3600) return Math.round(sec / 60) + '분 전'; if (sec < 86400) return Math.round(sec / 3600) + '시간 전';
+    if (sec < 86400 * 26) return Math.round(sec / 86400) + '일 전'; if (sec < 86400 * 320) return Math.round(sec / 86400 / 30) + '달 전'; return Math.round(sec / 86400 / 365) + '년 전';
+  }
+  function isYmd(s) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); if (!m) return false; const d = new Date(+m[1], +m[2] - 1, +m[3]); return d.getMonth() === +m[2] - 1 && d.getDate() === +m[3]; }
+  function validDate() {   // validation_date — BR-PERSON1604-003
+    const a = $('dStart').value, b = $('dEnd').value;
+    if (!(isYmd(a) && isYmd(b))) return false;
+    return Math.floor((new Date(b) - new Date(a)) / 86400000) + 1 >= 1;
+  }
+
+  // ================= 샘플 데이터 =================
+  const ME = { name: '나샘플', no: 'S000001', dept: '샘플1팀' };
+  const P = { kim: { name: '김샘플', no: 'S000002', dept: '샘플2팀' }, lee: { name: '이샘플', no: 'S000003', dept: '샘플영업팀' }, park: { name: '박샘플', no: 'S000004', dept: '샘플1팀' }, choi: { name: '최샘플', no: 'S000005', dept: '샘플인사팀' } };
+  const MAJORS = [['ZATN', '휴가/근태(샘플명)'], ['ZATS', '대체휴가(샘플명)'], ['ZBEN', '복리후생(샘플명)'], ['ZOFF', '근무시간관리(샘플명)'], ['ZSUP', '출장(샘플명)']];
+  const STAT_NM = { N: '대기', Y: '승인', C: '반려' };                       // ZZ_APPR_STAT (XLAT 미수령 — 스크린샷 '승인')
+  const PROG_NM = { A: '기안', B: '진행', C: '반려', D: '완료', E: '삭제', Z: '취소' };  // ZZ_APPR_PROG (JSP 주석·스크린샷 '완료')
+  const CL_NM = { 0: '기안자', 1: '결재자', 2: '합의자', 3: '수신자', 4: '참조자', 5: '조정자' };   // ZZ_APPR_CL (JSP·SQL 주석)
+  const L = (sort, cl, who, stat, d, memo) => ({ sort, cl, who, stat, dt: d ? dts(d) : null, memo: memo || null });
+  const URL1 = 'absence/vacation/sampleApprDetail';
+  const DOCS = [
+    { no: 'S-0001', title: '휴가/근태신청[연차(시간단위)]', major: 'ZATN', sub: 'S01', who: P.kim, memo: '김샘플 (S000002) 연차(시간단위) 8시간 (샘플)', add: ago(2, 9, 12), prog: 'B', multi: 'Y', url: URL1, w: 820, h: 640,
+      lines: [L(0, 0, P.kim, 'Y', ago(2, 9, 12)), L(1, 1, P.park, 'Y', ago(1, 14, 3)), L(2, 1, ME, 'N')] },
+    { no: 'S-0002', title: '복리후생[의료비 관리]', major: 'ZBEN', sub: 'STR', who: P.lee, memo: '2건 급성담낭염 1건 (샘플)', add: ago(5, 13, 12), prog: 'A', multi: 'N', url: 'benefit/sampleApprDetail', w: 0, h: 0,
+      lines: [L(0, 0, P.lee, 'Y', ago(5, 13, 12)), L(1, 1, ME, 'N')] },
+    { no: 'S-0003', title: '출장신청[국내출장]', major: 'ZSUP', sub: 'ZS01', who: P.choi, memo: '최샘플 국내출장 2일 (샘플)', add: ago(3, 11, 40), prog: 'B', multi: 'Y', url: 'busstrip/sampleApprDetail', w: 900, h: 700,
+      lines: [L(0, 0, P.choi, 'Y', ago(3, 11, 40)), L(1, 1, P.park, 'N'), L(2, 1, ME, 'N')] },
+    { no: 'S-0004', title: '휴가/근태신청[연차]', major: 'ZATN', sub: 'S02', who: P.kim, memo: '김샘플 연차 1일 (샘플)', add: ago(1, 8, 15), prog: 'A', multi: 'Y', url: URL1, w: 820, h: 640,
+      lines: [L(0, 0, P.kim, 'Y', ago(1, 8, 15)), L(1, 2, ME, 'N')] },
+    { no: 'S-0005', title: '휴가/근태취소[휴가취소관리]', major: 'ZATN', sub: 'S03', who: ME, memo: '나샘플 연차 취소 (샘플)', add: ago(10, 19, 53), prog: 'D', multi: 'Y', url: URL1, w: 820, h: 640,
+      lines: [L(0, 0, ME, 'Y', ago(10, 19, 53)), L(1, 1, ME, 'Y', ago(10, 19, 53), '자가결재 자동승인')] },
+    { no: 'S-0006', title: '복리후생[의료비 관리]', major: 'ZBEN', sub: 'STR', who: ME, memo: '1건 3,000,000원 (샘플)', add: ago(20, 13, 12), prog: 'D', multi: 'N', url: 'benefit/sampleApprDetail', w: 700, h: 500,
+      lines: [L(0, 0, ME, 'Y', ago(20, 13, 12)), L(1, 1, ME, 'Y', ago(20, 13, 12), '자가결재 자동승인')] },
+    { no: 'S-0007', title: '휴가/근태신청[대체휴가]', major: 'ZATS', sub: 'S01', who: P.lee, memo: '이샘플 대체휴가 1일 (샘플)', add: ago(15, 10, 0), prog: 'C', multi: 'Y', url: URL1, w: 820, h: 640,
+      lines: [L(0, 0, P.lee, 'Y', ago(15, 10, 0)), L(1, 1, ME, 'C', ago(14, 9, 30), '대체 근무일 확인 필요(샘플)')] },
+    { no: 'S-0008', title: '출장신청[해외출장]', major: 'ZSUP', sub: 'ZS02', who: P.choi, memo: '최샘플 해외출장 5일 (샘플)', add: ago(8, 16, 20), prog: 'B', multi: 'N', url: '', w: 0, h: 0,
+      lines: [L(0, 0, P.choi, 'Y', ago(8, 16, 20)), L(1, 1, P.park, 'Y', ago(7, 9, 0)), L(2, 1, P.kim, 'N'), L(3, 4, ME, 'N')] },
+    { no: 'S-0009', title: '휴가/근태신청[연차]', major: 'ZATN', sub: 'S02', who: P.park, memo: '박샘플 연차 2일 (샘플)', add: ago(25, 9, 5), prog: 'D', multi: 'Y', url: URL1, w: 820, h: 640,
+      lines: [L(0, 0, P.park, 'Y', ago(25, 9, 5)), L(1, 1, P.kim, 'Y', ago(24, 10, 0), '승인합니다(샘플)'), L(2, 3, ME, 'N')] },
+    { no: 'S-0010', title: '복리후생[경조금]', major: 'ZBEN', sub: 'EVT', who: ME, memo: '나샘플 경조금 신청 (샘플)', add: ago(4, 15, 2), prog: 'B', multi: 'N', url: 'benefit/sampleApprDetail', w: 700, h: 500,
+      lines: [L(0, 0, ME, 'Y', ago(4, 15, 2)), L(1, 1, P.park, 'N')] },
+    { no: 'S-0011', title: '휴가/근태신청[연차]', major: 'ZATN', sub: 'S02', who: ME, memo: '나샘플 연차 3일 (샘플)', add: ago(30, 18, 38), prog: 'C', multi: 'Y', url: URL1, w: 820, h: 640,
+      lines: [L(0, 0, ME, 'Y', ago(30, 18, 38)), L(1, 1, P.kim, 'C', ago(29, 9, 10), '일정 조정 바람(샘플)')] },
+    { no: 'S-0012', title: '휴가/근태신청[연차]', major: 'ZATN', sub: 'S02', who: P.kim, memo: '90일보다 오래된 대기 문서 (샘플)', add: ago(120, 9, 0), prog: 'A', multi: 'Y', url: URL1, w: 820, h: 640,
+      lines: [L(0, 0, P.kim, 'Y', ago(120, 9, 0)), L(1, 1, ME, 'N')] },
+    { no: 'S-0013', title: '휴가/근태신청[반차]', major: 'ZATN', sub: 'S04', who: P.park, memo: '박샘플 오전 반차 (샘플)', add: ago(6, 8, 50), prog: 'B', multi: 'Y', url: URL1, w: 820, h: 640,
+      lines: [L(0, 0, P.park, 'Y', ago(6, 8, 50)), L(1, 1, ME, 'Y', ago(6, 11, 0), '확인(샘플)'), L(2, 1, P.choi, 'N')] }
+  ];
+  DOCS.forEach(d => { d.reqDt = ymd(d.add); d.addS = dts(d.add); });
+  const PCOFF = [   // 외부 PC-OFF 응답 data[] 모양 (JSP 가 읽는 이름)
+    { src: 'old', seqno: '1001', emp_nm: '김샘플', emp_no: 'S000002', dpt_nm: '샘플2팀', work_ymd: ymd(ago(1)), sta_hm: '18:00', end_hm: ymd(ago(1)) + ' 21:00', reg_dt: dts(ago(1, 17, 30)), ot_desc: '프로젝트 마감 대응(샘플)' },
+    { src: 'new', seqno: 'H2001', emp_nm: '이샘플', emp_no: 'S000003', dpt_nm: '샘플영업팀', work_ymd: ymd(ago(0)), sta_hm: '22:00', end_hm: ymd(ago(-1)) + ' 01:00', reg_dt: dts(ago(0, 9, 5)), ot_desc: '야간 점검(샘플)' }
+  ];
+  const pcDone = new Set();
+
+  // ================= 상태 =================
+  const S = { tab: 'N', old: 'on', nw: 'on', save: 'ok', pst: '0', pres: 'true', counts: { req: 0, y: 0, c: 0, pc: 0 }, sel: null, pcRow: null };
+  const TABS = [['N', '결재진행함', 'APPROVAL_COUNT_WAIT'], ['C', '반려', 'APPROVAL_COUNT_REJECT'], ['Y', '승인', 'APPROVAL_COUNT_APROVE'], ['R', '수신/참조함'], ['AR', '상신함']];
+
+  // ================= 조회 (Q-001·002·003·006 를 샘플에 적용) =================
+  const crit = () => ({ s: $('dStart').value, e: $('dEnd').value, major: $('selMajor').value, drafter: $('inDrafter').value });
+  const inRange = (d, c) => d.reqDt >= c.s && d.reqDt <= c.e;
+  const majorOk = (d, c, zall) => !c.major || (zall && c.major === 'ZALL' ? ['ZATN', 'ZATS', 'ZATT'].includes(d.major) : d.major === c.major);
+  const drafterOk = (d, c) => !c.drafter || (d.who.name).toUpperCase().includes(c.drafter.toUpperCase());
+  const sortReq = (a, b) => (b.d.reqDt.localeCompare(a.d.reqDt)) || b.d.no.localeCompare(a.d.no);
+  function pendingRows(c) {   // BR-005 결재진행함 대상 (Q-001 앞부분)
+    const out = []; let blocked = 0;
+    DOCS.forEach(d => d.lines.forEach(ln => {
+      if (ln.who !== ME || !['1', '2', '5'].includes(String(ln.cl)) || ln.stat !== 'N' || !['A', 'B'].includes(d.prog)) return;
+      if (!inRange(d, c) || !majorOk(d, c, true) || !drafterOk(d, c)) return;
+      const prevOk = ln.sort - 1 === 0 || d.lines.some(x => x.sort === ln.sort - 1 && x.stat === 'Y');
+      if (!prevOk) { blocked++; return; }
+      out.push({ d, ln });
+    }));
+    return { rows: out.sort(sortReq), blocked };
+  }
+  function doneRows(c, st) {   // BR-006 승인·반려 (Q-001 UNION 부분)
+    const out = [];
+    DOCS.forEach(d => d.lines.forEach(ln => { if (ln.who === ME && ln.stat === st && inRange(d, c) && majorOk(d, c, true) && drafterOk(d, c)) out.push({ d, ln }); }));
+    return out.sort(sortReq);
+  }
+  function refRows(c) {   // BR-009 수신/참조함 (Q-003) — 기안자 조건 미적용, ZALL 분기 없음
+    const out = [];
+    DOCS.forEach(d => d.lines.forEach(ln => { if (ln.who === ME && [3, 4].includes(ln.cl) && inRange(d, c) && (!c.major || d.major === c.major)) out.push({ d, ln }); }));
+    return out.sort(sortReq);
+  }
+  function myRows(c) {   // BR-010 상신함 (Q-006) — 기안자 조건 없음, 등록 일시 역순
+    return DOCS.filter(d => d.who === ME && inRange(d, c) && majorOk(d, c, true)).sort((a, b) => b.addS.localeCompare(a.addS)).map(d => {
+      const done = d.lines.filter(x => ['Y', 'C'].includes(x.stat) && x.sort > 0).sort((a, b) => b.sort - a.sort)[0];
+      return { d, apprDt: ['C', 'D'].includes(d.prog) ? (done ? done.dt : ' ') : ' ' };
+    });
+  }
+  function pcoffFetch(c) {   // BR-012 — 결재진행함 + 문서구분 전체/ZOFF + 스위치
+    const res = { cnt: 0, rows: [], notes: [] };
+    if (!(c.major === '' || c.major === 'ZOFF')) { res.notes.push('기안문서구분이 전체·ZOFF 가 아니라 PC-OFF 를 부르지 않음'); return res; }
+    [['old', S.old, '기존 PC-OFF apprrovalInterface.url.count/detail (GET, privatekey=Q-007)'], ['new', S.nw, '신규 HR PC-OFF hrpcoff.url.count/detail (프록시 POST, 본문 g_aliasId, Q-007)']].forEach(([src, sw, nm]) => {
+      if (sw === 'off') { res.notes.push(nm + ' — 스위치 꺼짐'); return; }
+      if (sw === 'fail') { res.notes.push(nm + ' — success=false → 0건·빈 목록'); return; }
+      const rows = PCOFF.filter(p => p.src === src && !pcDone.has(p.seqno)).map(p => Object.assign({ tobe_yn: src === 'new' ? 'Y' : undefined }, p));
+      res.cnt += rows.length; res.rows.push(...rows); res.notes.push(nm + ' → ' + rows.length + '건');
+    });
+    return res;
+  }
+
+  // ================= 목록 그리기 =================
+  const box = (cls, t) => '<span class="box ' + cls + '">' + esc(t) + '</span>';
+  const dtc = (s, rq) => '<td class="c dtc" data-count="1" data-time="' + esc(s) + '"' + (rq ? dr(rq) : '') + '>' + esc(s) + '</td>';
+  function head(tab) {
+    const dept = (tab === 'AR' || tab === 'R') ? '' : '부서';   // BR-011
+    const chk = tab === 'N' ? '<input type="checkbox" id="allCheck"' + dr('012:1') + '>' : '<input type="checkbox">';
+    return '<thead><tr><th class="c"' + (tab === 'N' ? dr('004:5') : '') + '>' + chk + '</th><th class="c">결재상태</th><th>기안제목</th><th class="c">상세보기</th><th class="c">기안자</th><th>기안내용</th><th class="c">' + dept + fn('mDept') + '</th><th class="c"' + dr({ N: '010:1', C: '010:4', Y: '010:5', R: '010:6', AR: '010:7' }[tab]) + '>요청일자</th><th class="c">결재일시</th></tr></thead>';
+  }
+  const detailBtn = (r, reqs) => '<td class="c"' + dr(reqs) + '><a class="btn_view" data-detail="' + esc(r.d.no) + '" data-seq="' + (r.ln ? r.ln.sort : '') + '">상세보기</a></td>';
+  function renderTab(tab, data) {
+    const el = $('tab' + tab);
+    let body = '', extra = '';
+    if (tab === 'N' || tab === 'C' || tab === 'Y') {
+      const pc = tab === 'N' ? data.pc : [];
+      pc.forEach(p => {   // BR-013 PC-OFF 행 (makeApprovalList 1139-1176)
+        body += '<tr class="row pcrow" data-pc="' + esc(p.seqno) + '"' + dr('005:1,2,5,6') + '><td class="c"><input type="checkbox" class="nomulti" title="다건 결재 불가건입니다. 상세보기를 통해 결재해 주세요."' + dr('005:3') + '></td>' +
+          '<td class="c">' + box('box_ty1', '대기') + '</td><td>근무시간관리[연장근무 신청]</td>' +
+          '<td class="c"' + dr('013:1') + '><a class="btn_view" data-pcdetail="' + esc(p.seqno) + '">상세보기</a></td>' +
+          '<td class="c">' + esc(p.emp_nm + '(' + p.emp_no + ')') + '</td><td class="memo">' + esc(p.work_ymd + ' ' + p.sta_hm + ' ~ ' + p.end_hm) + '</td><td class="c">' + esc(p.dpt_nm) + '</td>' + dtc(p.reg_dt) + '<td class="c">-</td></tr>';
+      });
+      data.rows.forEach(r => {   // BR-008
+        const st = r.ln.stat, cls = st === 'N' ? 'box_ty1' : st === 'C' ? 'box_ty2' : 'box_ty3';
+        let cb = '';
+        if (st === 'N' && r.d.multi === 'Y') cb = '<input type="checkbox" name="chk" data-no="' + esc(r.d.no) + '" data-seq="' + r.ln.sort + '">';
+        if (st === 'N' && r.d.multi !== 'Y') cb = '<input type="checkbox" class="nomulti" title="다건 결재 불가건입니다. 상세보기를 통해 결재해 주세요."' + dr('004:5') + '>';
+        body += '<tr class="row" data-doc="' + esc(r.d.no) + '"' + dr(tab === 'N' ? '004:2,3' : tab === 'C' ? '006:1,2,3' : '006:7,8,9') + '><td class="c">' + cb + fn(st === 'N' ? 'ZZ_MULTI_YN=' + r.d.multi : '') + '</td>' +
+          '<td class="c">' + box(cls, STAT_NM[st]) + '</td><td>' + esc(r.d.title) + '</td>' + detailBtn(r, tab === 'N' ? '011:1,2' : tab === 'C' ? '011:5' : '011:6') +
+          '<td class="c">' + esc(r.d.who.name + '(' + r.d.who.no + ')') + '</td><td class="memo" title="' + esc(r.d.memo) + '">' + esc(r.d.memo) + '</td><td class="c">' + esc(r.d.who.dept) + '</td>' + dtc(r.d.addS) +
+          (st === 'N' ? '<td class="c">-</td>' : r.ln.dt ? dtc(r.ln.dt) : '<td class="c">ㆍ</td>') + '</tr>';
+      });
+      if (!data.rows.length && !pc.length) body = '<tr><td colspan="9" class="empty"' + dr(tab === 'N' ? '004:8' : tab === 'C' ? '006:6' : '006:12') + '>' + MSG.nodata + '</td></tr>';
+      else if (data.rows.length) extra = '<div class="multi-note">※ 일괄 결재 불가항목은 상세보기를 통해 결재해 주세요. ' + oq('07') + ' <span>(목업 설명) 원본은 이 문구를 표 안에 끼워 넣어 보이는 위치가 불분명 — 스크린샷에는 보이지 않음</span></div>';
+    } else if (tab === 'R') {   // BR-009 makeApprovalReceiveList
+      data.rows.forEach(r => {
+        const p = r.d.prog, cls = ['A', 'B'].includes(p) ? 'box_ty1' : ['C', 'E', 'Z'].includes(p) ? 'box_ty2' : 'box_ty3';
+        body += '<tr class="row" data-doc="' + esc(r.d.no) + '"' + dr('007:1,2,3') + '><td class="c"></td><td class="c">' + box(cls, PROG_NM[p]) + '</td><td>' + esc(r.d.title) + '</td>' + detailBtn(r, '007:4 011:7') +
+          '<td class="c">' + esc(r.d.who.name + '(' + r.d.who.no + ')') + '</td><td class="memo">' + esc(r.d.memo) + '</td><td></td>' + dtc(r.d.addS) + '<td class="c"> - </td></tr>';
+      });
+      if (!data.rows.length) body = '<tr><td colspan="9" class="empty"' + dr('007:6') + '>' + MSG.nodata + '</td></tr>';
+    } else {   // AR — BR-010 makeApprovalReqList
+      data.rows.forEach(r => {
+        const p = r.d.prog, cls = ['A', 'B'].includes(p) ? 'box_ty1' : ['C', 'E', 'Z'].includes(p) ? 'box_ty2' : 'box_ty3';
+        const ad = ['A', 'B'].includes(p) ? '<td class="c">-</td>' : (r.apprDt == null ? '<td class="c">ㆍ</td>' : r.apprDt.trim() ? dtc(r.apprDt) : '<td class="c"> </td>');
+        body += '<tr class="row" data-doc="' + esc(r.d.no) + '"' + dr('008:1,2,3,4') + '><td class="c"></td><td class="c">' + box(cls, PROG_NM[p]) + '</td><td>' + esc(r.d.title) + '</td><td class="c"> - ' + oq('04') + '</td>' +
+          '<td class="c">' + esc(r.d.who.name) + '</td><td class="memo">' + esc(r.d.memo) + '</td><td></td>' + dtc(r.d.addS) + ad + '</tr>';
+      });
+      if (!data.rows.length) body = '<tr><td colspan="9" class="empty"' + dr('008:6') + '>' + MSG.nodata + '</td></tr>';
+    }
+    const btns = tab === 'N' ? '<div class="button_yn"' + dr('004:7 012:2') + '><button class="btn_approve" id="btnA">✓ 승인</button><button class="btn_reject" id="btnR">↺ 반려</button></div>' : '';
+    const tag = { N: '004', C: '006', Y: '006', R: '007', AR: '008' }[tab];
+    el.innerHTML = '<div style="text-align:right">' + rb(tag) + (tab === 'N' ? rb('005') + rb('012') : '') + (tab === 'AR' || tab === 'R' ? ' ' + oq('02') : '') + '</div>' +
+      '<div class="gscroll lst"' + (tab === 'C' ? dr('006:4') : tab === 'Y' ? dr('006:10') : tab === 'R' ? dr('007:5') : tab === 'AR' ? dr('008:5') : '') + '><table class="nt">' + head(tab) + '<tbody>' + body + '</tbody></table></div>' + extra + btns;
+    if (tab === 'N') {
+      $('btnA').onclick = () => approvalConfirmPopup('approve');
+      $('btnR').onclick = () => approvalConfirmPopup('reject');
+      $('allCheck').onclick = e => el.querySelectorAll('input[name=chk]').forEach(x => x.checked = e.target.checked);   // allCheck — BR-016
+    }
+  }
+  function renderTabs() {
+    const pcSum = S.counts.pc;
+    $('tabBar').innerHTML = TABS.map(([k, nm, cid]) => {
+      let cnt = '';
+      if (k === 'N') cnt = ' (' + (S.counts.req + pcSum) + ')';
+      if (k === 'C') cnt = ' (' + S.counts.c + ')';
+      if (k === 'Y') cnt = ' (' + S.counts.y + ')';
+      return '<li data-tab="' + k + '" class="' + (S.tab === k ? 'on' : '') + '">' + nm + cnt + (cid ? fn(cid) : '') + '</li>';
+    }).join('');
+    TABS.forEach(([k]) => $('tab' + k).hidden = S.tab !== k);
+  }
+  function dtlInit(msg, isPc) {
+    $('dtlTable').innerHTML = '<thead><tr><th class="c" style="width:100px">결재순서</th><th class="c" style="width:100px">결재구분</th><th class="c" style="width:280px">결재자 기본정보</th><th>결재자의견</th><th class="c" style="width:120px">결재상태</th><th class="c" style="width:150px"' + dr('010:2') + '>결재일시</th></tr></thead>' +
+      '<tbody><tr><td colspan="6" class="empty"' + (isPc ? dr('005:7') : '') + '>' + esc(msg) + '</td></tr></tbody>';
+  }
+
+  // ================= searchApproval (FL-PERSON1604-02~04) =================
+  function searchApproval(flag, silent) {
+    if (!validDate()) { say(MSG.date + ' (BR-PERSON1604-003 · REQ-003 #3)'); return false; }
+    const tab = flag || S.tab, c = crit();
+    if (tab === 'N' || tab === 'C' || tab === 'Y') {
+      const pend = pendingRows(c), all = pendingRows(c).rows.length, y = doneRows(c, 'Y'), cc = doneRows(c, 'C');
+      let rows = tab === 'N' ? pend.rows : tab === 'Y' ? y : cc;
+      rows = rows.slice(0, 100);   // START_ROW 1 · END_ROW 100
+      let pc = { cnt: 0, rows: [], notes: [] };
+      if (tab === 'N') pc = pcoffFetch(c);
+      S.counts = { req: all, y: y.length, c: cc.length, pc: pc.cnt };   // BR-007 makeApprovalCount (PC-OFF 는 이번 조회에서 가져온 것만)
+      let pcRows = pc.rows, removed = 0;
+      if (tab === 'N' && c.drafter) { const before = pcRows.length; pcRows = pcRows.filter(p => p.emp_nm === c.drafter); removed = before - pcRows.length; }   // checkSearchCondition
+      if (!silent) log('POST search.fo SVCID=search ZZ_APPR_STAT=' + tab + ' 기간 ' + c.s + '~' + c.e + ' 문서구분="' + c.major + '" 기안자="' + c.drafter + '" START_ROW=1 END_ROW=100 → Q-PERSON1604-001 ' + rows.length + '건' +
+        (tab === 'N' && pend.blocked ? ' (앞 결재자 미승인으로 제외 ' + pend.blocked + '건, BR-005)' : '') + ' · Q-PERSON1604-002 대기 ' + all + '·승인 ' + y.length + '·반려 ' + cc.length +
+        (tab === 'N' ? ' · PC-OFF: ' + pc.notes.join(' / ') + (removed ? ' · 기안자 정확히 일치하지 않는 PC-OFF ' + removed + '행 화면에서 제거(건수 그대로, BR-013 · OQ-03)' : '') : ' · PC-OFF 조회 안 함 → 결재진행함 건수에서 PC-OFF 빠짐(BR-007 · REQ-006 #' + (tab === 'C' ? '5' : '11') + ')'));
+      renderTab(tab, { rows, pc: pcRows });
+      $('otHelp').innerHTML = tab === 'N' && pcRows.length ? esc(MSG.pc1) + '<br>' + esc(MSG.pc2) : '';
+      renderTabs();
+    } else if (tab === 'R') {
+      const rows = refRows(c).slice(0, 100);
+      if (!silent) log('POST search.fo SVCID=search_receive → Q-PERSON1604-003 ' + rows.length + '건 · Q-PERSON1604-004 TOTAL_COUNT(화면 미사용). 기안자 "' + c.drafter + '" 는 ZZ_REQ_SEARCH 를 보내지 않아 적용 안 됨(BR-009 · OQ-02). 탭 건수 그대로');
+      renderTab('R', { rows });
+    } else {
+      const rows = myRows(c).slice(0, 100);
+      if (!silent) log('POST search.fo SVCID=search_apprreq → Q-PERSON1604-006 ' + rows.length + '건 (기안자 조건 없음, PC-OFF 조회 안 함, BR-010). 탭 건수 그대로');
+      renderTab('AR', { rows });
+    }
+    if (!silent) dtlInit(MSG.noselect);   // 조회하면 결재선 영역 초기화
+    S.sel = null;
+    refresh();
+    return true;
+  }
+  function changeApprovalView(flag) {   // FL-PERSON1604-05 · BR-011
+    S.tab = flag;
+    renderTabs();
+    searchApproval(flag);
+    dtlInit(MSG.noselect);
+    refresh();
+  }
+
+  // ================= 결재선 (FL-PERSON1604-06 · BR-014) =================
+  function openDetailList(tr) {
+    document.querySelectorAll('tr.row.on').forEach(x => x.classList.remove('on'));
+    tr.classList.add('on');
+    if (tr.dataset.pc) { dtlInit(MSG.pcSel, true); log('PC-OFF 행 클릭 → 조회 없이 24000|1545 (BR-013 · REQ-005 #7)'); refresh(); return; }
+    const d = DOCS.find(x => x.no === tr.dataset.doc);
+    log('POST search.fo SVCID=search_detail ZZ_REQ_NO=(암호화 ' + d.no + ') ZZ_REQ_DT=' + d.reqDt.replace(/-/g, '') + ' → Q-PERSON1604-005 ' + d.lines.length + '행 (FN-PERSON1604-getNewApprovalStateOfAffairs)');
+    const rows = d.lines.slice().sort((a, b) => a.sort - b.sort).map(l => '<tr><td class="c">' + (l.sort === 0 ? '-' : l.sort) + '</td><td class="c">' + esc(CL_NM[l.cl]) + '</td>' +
+      '<td class="c">' + esc(l.who.name + '[' + l.who.dept + '/샘플회사]') + '</td><td>' + esc(l.memo || '') + '</td><td class="c">' + (l.sort > 0 ? esc(STAT_NM[l.stat]) : 'ㆍ') + '</td>' +
+      (l.dt ? dtc(l.dt) : '<td class="c">ㆍ</td>') + '</tr>').join('');
+    $('dtlTable').querySelector('tbody').innerHTML = rows;
+    $('dtlArea').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    refresh();
+  }
+
+  // ================= 상세보기 (FL-PERSON1604-07 · BR-015) =================
+  function openDetailPopup(no, seq) {
+    const d = DOCS.find(x => x.no === no);
+    if (!d.url.trim()) { say('(임시문구-asis 미정의) [결재URL] 필수 입력 항목입니다. (FrameOne ERR_REQUIRED · BR-PERSON1604-015 · REQ-011 #' + ({ N: '2', C: '5', Y: '6', R: '7' }[S.tab] || '2') + ')'); log('상세보기 ' + no + ' — ZZ_URL 없음 → 필수 입력 오류, 창 안 열림'); return; }
+    const scroll = (d.major === 'ZSUP' && ['ZS01', 'ZS02', 'ZS03'].includes(d.sub)) || (d.major === 'ZMAG' && d.sub === 'PTM') || (d.major === 'ZBEN' && d.sub === 'STR') || (d.major === 'ZOFF' && d.sub === 'EST') ? '1' : 'auto';
+    const w = !d.w ? 600 : d.w, h = !d.h ? 300 : d.h;
+    log('window detailApprovalPopup ' + w + '×' + h + ' scrollbars=' + scroll + ' → GET approvalDetail/page.fo ZZ_REQ_NO=(암호화) APPR_POP_YN=Y ZZ_APPR_SEQ=' + seq + ' ZZ_REQ_MAJOR=' + d.major + ' ZZ_URL=' + d.url + ' ZZ_CHECK=1 → 뷰 approvaldetail.contents.' + d.url + ' + FN-EHR.ApprovalCommService-getApprovalDtlPopup');
+    const mine = d.lines.find(l => l.who === ME && l.sort > 0);
+    $('pdHead').textContent = '새 창 detailApprovalPopup — ' + w + '×' + h + ', 스크롤바 ' + scroll + ' — 뷰 approvaldetail.contents.' + d.url;
+    $('pdBody').innerHTML = '<h3>◉ 결재처리(상세화면)</h3><table class="pt"><tr><th>기안자</th><td>' + esc(d.who.name + '(' + d.who.no + ')') + '</td><th>대상자</th><td>' + esc(d.who.name + '(' + d.who.no + ')') + '</td></tr>' +
+      '<tr><th>문서</th><td colspan="3">' + esc(d.title) + '</td></tr><tr><th>내용</th><td colspan="3">' + esc(d.memo) + '</td></tr>' +
+      '<tr><th>결재자의견</th><td colspan="3">' + esc(mine && mine.memo || '') + '</td></tr></table>' +
+      '<div class="pbtn"><button id="pdClose">▸ 닫기</button></div>' +
+      '<div class="mocknote">(목업 설명) 상세 화면 본문은 문서구분별 JSP(approvaldetail.contents.&lt;ZZ_URL&gt;)가 그리며 이 분석 범위 밖입니다. 스크린샷 PERSON1604_4.png(휴가/근태 결재처리(상세화면): 기안자·대상자·휴가/근태구분·신청기간·사유·비고·대체근무일·출퇴근시간·취소사유·결재자의견·닫기)의 모양만 샘플로 보입니다. 그 화면의 승인·반려는 각 상세 JSP 몫입니다.</div>';
+    $('popDetail').hidden = false; $('pdClose').onclick = () => { $('popDetail').hidden = true; refresh(); };
+    $('popDetail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    refresh();
+  }
+  $('pdX').onclick = () => { $('popDetail').hidden = true; refresh(); };
+
+  // ================= 일괄 승인·반려 (FL-PERSON1604-08·09 · BR-016·017) =================
+  let apFlag = 'approve';
+  function approvalConfirmPopup(flag, sample) {
+    let checked = [...$('tabN').querySelectorAll('input[name=chk]:checked')];
+    if (!checked.length && !sample) { say(MSG.notSel + ' (BR-PERSON1604-016 · REQ-012 #2)'); return; }
+    if (!checked.length && sample) { const first = $('tabN').querySelector('input[name=chk]'); if (first) { first.checked = true; checked = [first]; } }
+    apFlag = flag;
+    const items = checked.map(x => ({ d: DOCS.find(d => d.no === x.dataset.no), seq: x.dataset.seq }));
+    $('apList').innerHTML = '<thead><tr><th class="c">기안제목</th><th class="c">기안자</th><th>기안내용</th><th class="c">요청일자</th></tr></thead><tbody>' +
+      (items.length ? items.map(i => '<tr data-no="' + esc(i.d.no) + '" data-seq="' + i.seq + '"><td class="c">' + esc(i.d.title) + '</td><td class="c">' + esc(i.d.who.name + '(' + i.d.who.no + ')') + '</td><td>' + esc(i.d.memo) + '</td><td class="c">' + esc(rel(i.d.addS)) + '</td></tr>').join('')
+        : '<tr><td colspan="4" class="empty">' + MSG.nodata + '</td></tr>') + '</tbody>';
+    $('apGo').textContent = flag === 'approve' ? '승인' : '반려';
+    $('apGo').className = flag === 'approve' ? 'btn_approve' : 'btn_reject';
+    $('apMemo').value = '';
+    $('popAppr').hidden = false;
+    log('결재처리 팝업(' + (flag === 'approve' ? '승인' : '반려') + ') — 선택 ' + items.length + '건' + (sample ? ' (목업이 샘플 1건을 골라 열었습니다)' : ''));
+    $('popAppr').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    refresh();
+    return sample ? '샘플 문서 1건을 골라 결재처리 팝업을 열었습니다.' : '';
+  }
+  const closeAppr = () => { $('popAppr').hidden = true; refresh(); };
+  $('apX').onclick = closeAppr; $('apClose').onclick = closeAppr;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !focus && !$('popAppr').hidden) closeAppr(); });
+  $('apGo').onclick = () => {
+    const ap = apFlag === 'approve';
+    if (!ask((ap ? MSG.cfmA : MSG.cfmR) + ' (BR-PERSON1604-017 · REQ-012 #4)')) return;
+    const memo = $('apMemo').value;
+    if (!ap && memo.length === 0) { say('(임시문구-asis 미정의) [결재자의견] 필수 입력 항목입니다. (FrameOne ERR_REQUIRED · BR-PERSON1604-017 · REQ-012 #5)'); $('apMemo').focus(); return; }
+    const rows = [...$('apList').querySelectorAll('tr[data-no]')];
+    log('POST ' + (ap ? 'saveAppr.fo → FN-EHR.ApprovalCommService-saveApproval' : 'saveReturn.fo → FN-EHR.ApprovalCommService-saveReturn') + ' ds_approval ' + rows.length + '행 {ZZ_REQ_NO(암호화), ZZ_APPR_SEQ, ZZ_APPR_MEMO="' + memo + '", CHK_SELECT="1"}');
+    if (S.save === 'err') { log('공통 서비스 검사 오류 → 전체 롤백, 팝업 유지'); say('(임시문구-asis 미정의) 공통 결재 서비스가 돌려준 오류 문구가 여기에 나옵니다 (BR-PERSON1604-017 · REQ-012 #6)'); return; }
+    rows.forEach(tr => {   // 목업: 내 결재선 행 갱신 (진행·완료 판정은 공통 서비스 몫 — 다음 결재자 없으면 완료로 가정)
+      const d = DOCS.find(x => x.no === tr.dataset.no), ln = d.lines.find(l => l.who === ME && String(l.sort) === tr.dataset.seq);
+      ln.stat = ap ? 'Y' : 'C'; ln.dt = dts(new Date()); ln.memo = memo || null;
+      d.prog = !ap ? 'C' : d.lines.some(l => l.sort > ln.sort && [1, 2, 5].includes(l.cl)) ? 'B' : 'D';
+    });
+    log('성공(158|1574) → 팝업 닫기 · searchApproval("N") (FL-PERSON1604-09)');
+    closeAppr();
+    S.tab = 'N'; renderTabs(); searchApproval('N');
+  };
+
+  // ================= 연장근무 상세·승인·반려 (FL-PERSON1604-10·11 · BR-018·019) =================
+  function openPCOFFDetailPopup(seqno, sample) {
+    let p = PCOFF.find(x => x.seqno === seqno);
+    if (!p && sample) p = PCOFF.find(x => !pcDone.has(x.seqno)) || PCOFF[0];
+    const isNew = p.src === 'new', on = isNew ? S.nw === 'on' : S.old === 'on';
+    S.pcRow = p;
+    log('window detailApprovalPopup 760×600 → GET pcoffDetailPopup.fo seqno=' + p.seqno + ' tobe_yn=' + (isNew ? 'Y' : '(없음)') + ' → ' + (isNew ? 'hrpcoff.url.detail (FN-PERSON1604-hrPcoffAPIConnention)' : 'url.detail (FN-PERSON1604-pcOffAPIConnention)') + (on ? '' : ' — 스위치가 켜져 있지 않아 상세를 싣지 않음(빈 칸)'));
+    const week = ['일', '월', '화', '수', '목', '금', '토'];
+    const show = on && !pcDone.has(p.seqno);
+    $('ppEmp').textContent = show ? p.emp_nm + '(' + p.emp_no + ')' : '';
+    $('ppYmd').textContent = show ? p.work_ymd + ' (' + week[new Date(p.work_ymd).getDay()] + ')' : '';
+    $('ppSta').textContent = show ? p.sta_hm : '';
+    $('ppEnd').textContent = show ? (p.work_ymd === p.end_hm.substring(0, 10) ? p.end_hm.substring(11) : p.end_hm) : '';
+    $('ppRsn').textContent = show ? p.ot_desc : '';
+    $('popPcoff').hidden = false;
+    $('popPcoff').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    refresh();
+    return sample ? '샘플 연장근무 ' + p.seqno + ' 을(를) 열었습니다.' : '';
+  }
+  function pcSave(flag) {
+    const p = S.pcRow, ap = flag === 'approve';
+    if (!ask((ap ? MSG.cfmA : MSG.cfmR) + ' (BR-PERSON1604-019 · REQ-013 #3)')) return;
+    const st = S.pst === 'parse' ? '0' : S.pst;   // 해석 실패 → "0"(처리 가능) — OQ-06
+    const possible = ['0', '1', '7'].includes(st);
+    log('POST pcoffSave.fo SVCID=' + flag + ' seqno=' + p.seqno + ' tobe_yn=' + (p.src === 'new' ? 'Y' : '') + ' → 상태 조회 url.query: ' + (S.pst === 'parse' ? '응답 해석 실패 → status "0"' : 'aprv_status=' + S.pst) + ' → ' + (possible ? '처리 가능 → url.' + (ap ? 'approval' : 'reject') + ' 호출' : '불가 → result=null') + ' (checkPcoffApprovalStatus)');
+    const close = () => { $('popPcoff').hidden = true; log('retrieveApproval: opener.searchApproval() → 창 닫기'); searchApproval(); };
+    if (!possible) { say('결재가 완료되거나 취소된 건 입니다. (BR-PERSON1604-019 · REQ-013 #5)'); close(); return; }
+    if (S.pres === 'empty') { say('결재가 완료되거나 취소된 건 입니다. (BR-PERSON1604-019 · REQ-013 #5)'); return; }
+    if (S.pres === 'false') { say('접속부하로 인해 처리가 지연되고 있습니다. 잠시 후 시도해주세요. (BR-PERSON1604-019 · REQ-013 #5)'); return; }
+    pcDone.add(p.seqno);
+    say((ap ? MSG.ok : MSG.rej) + ' (BR-PERSON1604-019 · REQ-013 #4)');
+    close();
+  }
+  $('ppOk').onclick = () => pcSave('approve');
+  $('ppNo').onclick = () => pcSave('reject');
+  $('ppClose').onclick = () => { $('popPcoff').hidden = true; refresh(); };
+
+  // ================= 도움말 (FL-PERSON1604-12 · BR-020) =================
+  function openGuide() {
+    log('window "eHR Approval Guide" 1070×720 → GET guidePopup.fo → PAGEID=PERSON1604_04 FN-EHR.ContentsInformationService-getReplaceContents (화면에는 여는 버튼이 없음, OQ-05)');
+    $('manual').innerHTML = '<b>HR 전자결재 도움말 (샘플 본문)</b><p>콘텐츠 관리에 PERSON1604_04 로 등록된 안내 본문(DESCRLONG)이 그대로 보입니다. 등록 여부는 확인되지 않았습니다.</p>';
+    $('popGuide').hidden = false; $('popGuide').scrollIntoView({ behavior: 'smooth', block: 'start' }); refresh();
+  }
+  $('sGuide').onclick = openGuide;
+  $('pgX').onclick = () => { $('popGuide').hidden = true; refresh(); };
+
+  // ================= 이벤트 =================
+  $('scrMain').addEventListener('click', e => {
+    const li = e.target.closest('#tabBar li');
+    if (li) return changeApprovalView(li.dataset.tab);
+    const nm = e.target.closest('input.nomulti');
+    if (nm) { e.preventDefault(); e.stopPropagation(); say(MSG.onlyDetail + ' (BR-PERSON1604-008 · REQ-004 #5)'); return; }   // chkbxClick
+    if (e.target.closest('input[name=chk], #allCheck')) { e.stopPropagation(); return; }
+    const dv = e.target.closest('[data-detail]');
+    if (dv) { e.stopPropagation(); return openDetailPopup(dv.dataset.detail, dv.dataset.seq); }
+    const pv = e.target.closest('[data-pcdetail]');
+    if (pv) { e.stopPropagation(); return openPCOFFDetailPopup(pv.dataset.pcdetail); }
+    const dt = e.target.closest('.dtc');
+    if (dt) { e.stopPropagation(); toggleDt(dt); return; }
+    const tr = e.target.closest('tr.row');
+    if (tr) openDetailList(tr);
+  });
+  $('btnSearch').onclick = () => searchApproval();
+  $('inDrafter').addEventListener('keydown', e => { if (e.key === 'Enter') searchApproval(); if (e.key === 'Escape') closeAppr(); });   // BR-021
+  ['dStart', 'dEnd'].forEach(id => $(id).addEventListener('change', () => { if (!validDate()) { say(MSG.date + ' (BR-PERSON1604-003 · REQ-003 #3)'); $(id).focus(); } }));   // datepicker onHide
+  function toggleDt(el) {   // changeDateTime — BR-021
+    const n = +el.dataset.count || 1, t = el.dataset.time;
+    el.textContent = n % 2 === 0 ? t : rel(t);
+    el.dataset.count = n + 1;
+  }
+  setInterval(() => document.querySelectorAll('.dtc').forEach(toggleDt), 7000);   // 7초마다 번갈아 표시
+
+  // ================= 목업 조건 막대 =================
+  const re = () => { S.old = $('sOld').value; S.nw = $('sNew').value; S.save = $('sSave').value; S.pst = $('sPst').value; S.pres = $('sPres').value; };
+  ['sOld', 'sNew'].forEach(id => $(id).onchange = () => { re(); searchApproval(); });
+  ['sSave', 'sPst', 'sPres'].forEach(id => $(id).onchange = re);
+
+  // ================= 진입 (FL-PERSON1604-01) =================
+  $('selMajor').innerHTML = '<option value="">전체</option>' + MAJORS.map(([c, n]) => '<option value="' + c + '">' + esc(n) + '</option>').join('');   // Q-008 · BR-004
+  const today = new Date(), st = new Date(); st.setDate(st.getDate() - 90);
+  $('dStart').value = ymd(st); $('dEnd').value = ymd(today);   // BR-002
+  $('dStart').placeholder = ymd(st); $('dEnd').placeholder = ymd(today);
+  log('GET page.fo — HtmlAuthorityFilter 권한·PROG_CD(PERSON1604 / A_PERSON1604) 확인 → approvalList.jsp (fo:selectList getReqMajorist → Q-PERSON1604-008) · 기본 기간 ' + ymd(st) + ' ~ ' + ymd(today) + ' (BR-001·002·004)');
+  ['C', 'Y', 'R', 'AR'].forEach(t => searchApproval(t, true));   // (목업 설명) 다른 탭을 미리 그려 둠 — 패널 화면 위치용
+  searchApproval('N');
+  renderTabs();
+  dtlInit(MSG.noselect);
+
+  // ================= 화면 목록·전환 =================
+  const SCREENS = [['tabN', '결재진행함 탭'], ['tabC', '반려 탭'], ['tabY', '승인 탭'], ['tabR', '수신/참조함 탭'], ['tabAR', '상신함 탭'], ['scrMain', '통합결재함'],
+    ['popAppr', '결재처리 팝업'], ['popDetail', '결재 상세 팝업'], ['popPcoff', '연장근무 신청 상세 팝업'], ['popGuide', '도움말 팝업'], ['logArea', '처리 로그(목업 전용)'], ['simBar', '목업 전용 조건']];
+  const POPUPS = ['popAppr', 'popDetail', 'popPcoff', 'popGuide'];
+  const hidePops = () => POPUPS.forEach(p => $(p).hidden = true);
+  const tabGo = t => () => { hidePops(); if (S.tab !== t) changeApprovalView(t); return ''; };
+  const SHOW = {
+    tabN: tabGo('N'), tabC: tabGo('C'), tabY: tabGo('Y'), tabR: tabGo('R'), tabAR: tabGo('AR'), scrMain: () => { hidePops(); return ''; },
+    popAppr: () => { if (S.tab !== 'N') changeApprovalView('N'); return approvalConfirmPopup('approve', true); },
+    popDetail: () => { const d = DOCS.find(x => x.url && x.lines.some(l => l.who === ME)); openDetailPopup(d.no, 1); return '샘플 문서 ' + d.no + ' 의 상세 팝업을 열었습니다.'; },
+    popPcoff: () => openPCOFFDetailPopup(null, true),
+    popGuide: () => { openGuide(); return ''; },
+    logArea: () => '', simBar: () => ''
+  };
+
+  // ================= 요구사항 초점·패널 =================
+  const isShown = el => el.getClientRects().length > 0 && el.offsetHeight > 0;
+  const oqText = s => esc(s).replace(/OQ-[A-Z0-9_]+-\d+/g, m => '<span class="oq" title="' + esc(m + ': ' + (OQS[m] || '')) + '">' + m + '</span>');
+  const regions = id => [...document.querySelectorAll('[data-req]')].flatMap(el => el.dataset.req.split(' ')
+    .map(t => t.split(':')).filter(([rid]) => rid === id).map(([, n]) => ({ el, acs: n ? n.split(',').map(Number) : [] })));
+  const scrOf = el => { const s = SCREENS.find(([sid]) => el.closest('#' + sid)); return s ? s[0] : null; };
+  const isCommon = el => !!el.closest('[data-common]');
+  const mainOf = id => { const scr = regions(id).filter(x => !isCommon(x.el)).map(x => scrOf(x.el)); const s = SCREENS.find(([sid]) => !POPUPS.includes(sid) && scr.includes(sid)); return s ? s[0] : null; };
+  function ensureScreen(id) {
+    const m = mainOf(id);
+    if (!m) return '';
+    if (isShown($(m)) && regions(id).some(x => isShown(x.el) && scrOf(x.el) === m)) return '';
+    return SHOW[m] ? (SHOW[m]() || '') : '';
+  }
+  function focusReq(id, fromEl) {
+    let note = '';
+    if (!fromEl) note = ensureScreen(id);
+    const shown = regions(id).filter(x => isShown(x.el));
+    const i = fromEl ? shown.findIndex(x => x.el.contains(fromEl)) : 0;
+    focus = { id, i: Math.max(0, i), note };
+    document.body.classList.add('rp-open');
+    applyFocus(true);
+    const item = document.querySelector('.rq.on'), rp = $('rpanel');
+    if (item) rp.scrollTo({ top: item.offsetTop - rp.querySelector('.rp-head').offsetHeight, behavior: 'smooth' });
+  }
+  function unfocus() { focus = null; applyFocus(false); }
+  function applyFocus(scroll) {
+    document.querySelectorAll('.rfocus').forEach(el => { el.classList.remove('rfocus', 'rcur'); delete el.dataset.flabel; });
+    if (!focus) { document.body.classList.remove('focusing'); renderPanel(); return; }
+    const shown = regions(focus.id).filter(x => isShown(x.el));
+    if (focus.i >= shown.length) focus.i = 0;
+    document.body.classList.toggle('focusing', shown.length > 0);
+    shown.forEach((x, i) => { x.el.classList.add('rfocus'); x.el.classList.toggle('rcur', i === focus.i); x.el.dataset.flabel = short(focus.id) + (x.acs.length ? ' #' + x.acs.join('·#') : ''); });
+    const cur = shown[focus.i];
+    if (scroll && cur) window.scrollTo({ top: Math.max(0, cur.el.getBoundingClientRect().top + window.scrollY - 90), behavior: 'smooth' });
+    renderPanel();
+  }
+  function refresh() { if (!ready) return; if (focus) applyFocus(false); else renderPanel(); }
+  function renderPanel() {
+    $('rpList').innerHTML = REQS.map(r => {
+      const all = regions(r.id), on = focus && focus.id === r.id;
+      const locs = SCREENS.filter(([sid]) => all.some(x => scrOf(x.el) === sid))
+        .map(([sid, name]) => '<span data-go="' + sid + '" title="이 화면으로 이동" class="' + (all.some(x => scrOf(x.el) === sid && isShown(x.el)) ? 'here' : '') + '">' + esc(name) + '</span>').join('');
+      let x = '';
+      if (on) {
+        const shown = all.filter(y => isShown(y.el));
+        const msg = focus.note || (shown.length ? '' : all.length ? '지금 화면에 없습니다 — 위 화면 위치를 누르세요.' : '화면 위치 없음');
+        x = '<div class="x"><div class="meta">' + esc(r.id) + ' · 행위자: ' + esc(r.actor) + ' · 우선순위: ' + esc(r.priority) + '</div>' +
+          (msg ? '<div class="away">' + esc(msg) + '</div>' : '') +
+          '<b>인수 조건</b><ol class="ac">' + r.acceptance_criteria.map((ac, i) => '<li><span class="mk">#' + (i + 1) + '</span><span>' + oqText(ac) + '</span></li>').join('') + '</ol>' +
+          '<div class="brs">관련 규칙: ' + (r.rules || []).map(b => '<span class="br" title="' + esc(BR_TITLES[b] || '') + '">' + b.replace(/^BR-[A-Z0-9_]+-/, 'BR-') + '</span>').join('') + '</div>' +
+          (r.notes ? '<div class="notes">참고: ' + oqText(r.notes) + '</div>' : '') + '</div>';
+      }
+      return '<div class="rq' + (on ? ' on' : '') + '" data-rq="' + r.id + '">' +
+        '<div class="h"><a class="rb">' + short(r.id) + '</a><b>' + esc(r.title) + '</b><span class="cnt">' + (on ? '▾' : '▸') + '</span></div>' +
+        '<div class="st">' + esc(r.statement) + '</div>' +
+        '<div class="loc">화면 위치: ' + (locs || '<span>화면 위치 없음</span>') + '</div>' + x + '</div>';
+    }).join('');
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.rb[data-rb]');
+    if (b) { e.preventDefault(); e.stopPropagation(); return focusReq(b.dataset.rb, b); }
+    if (document.body.classList.contains('focusing') && !e.target.closest('.rfocus, .rpanel, .topbar')) { e.preventDefault(); e.stopPropagation(); unfocus(); }
+  }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && focus) unfocus(); });
+  $('rpList').onclick = e => {
+    const rq = e.target.closest('[data-rq]'); if (!rq) return;
+    const id = rq.dataset.rq, go = e.target.closest('[data-go]');
+    if (go) {
+      const note = SHOW[go.dataset.go] ? (SHOW[go.dataset.go](true) || '') : '';
+      const shown = regions(id).filter(x => isShown(x.el));
+      focus = { id, i: Math.max(0, shown.findIndex(x => scrOf(x.el) === go.dataset.go)), note };
+      return applyFocus(true);
+    }
+    if (e.target.closest('.x')) return;
+    if (focus && focus.id === id) unfocus(); else focusReq(id, null);
+  };
+  $('rpToggle').onclick = () => { document.body.classList.toggle('rp-open'); renderPanel(); };
+  $('rpClose').onclick = () => { document.body.classList.remove('rp-open'); unfocus(); };
+  if (window.matchMedia('(min-width: 900px)').matches) document.body.classList.add('rp-open');
+  ready = true;
+  renderPanel();
+})();
+</script>
+<!-- mockup-view:start v1 -->
+<style>
+  /* ---- 개발정보 토글 (공통 블록, tools/analysis/mockup_view.py 로 넣음 — 손으로 고치지 않는다) ---- */
+  .mv-sw { display: inline-flex; margin: 0 auto; border: 1px solid rgba(255,255,255,.55); border-radius: 12px; overflow: hidden; font: bold 11px/20px Arial, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; white-space: nowrap; }
+  .mv-sw button { border: none; border-radius: 0; background: transparent; color: var(--header-text, #fff); padding: 0 11px; font: inherit; cursor: pointer; opacity: .75; }
+  .mv-sw button[aria-pressed="true"] { background: var(--header-text, #fff); color: var(--header, #2f4f6f); opacity: 1; }
+  @media (max-width: 600px) { .mv-sw { order: 3; } }
+  .mv-cond { display: none; border: 1px dashed var(--line, #c4c4c4); padding: 4px 8px; margin: 0 0 8px; font-size: 11px; max-width: 980px; }
+  .mv-cond > .mv-h { color: var(--muted, #6b6b6b); font-weight: bold; margin-right: 6px; }
+  .mv-cond > :not(.mv-h) { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 2px 12px 2px 0; }
+  :root[data-mv="screen"] .mv-cond.on { display: block; }
+  :root[data-mv="screen"] :is(.note, .rpanel, #rpToggle, .rb, .oq, .fname, .hid-mark, #dbBox, .mock, .log, .plog, .runlog, [data-dev]) { display: none !important; }
+  :root[data-mv="screen"] body.focusing::before { display: none; }
+  :root[data-mv="screen"] .rfocus { outline: none; }
+  :root[data-mv="screen"] .rfocus::after { display: none; }
+</style>
+<script>
+/* 개발정보 토글: '화면만 보기' 면 노란 안내 상자·요구사항 패널·REQ 배지·OQ·필드명·숨김 필드·처리 로그를 숨긴다.
+   숨기는 상자 안의 목업 조건(사용자·서버 값 바꾸기)은 메뉴 경로 아래 '목업 조건' 줄로 옮겨 그대로 쓰게 하고, 돌아오면 제자리로.
+   상태는 localStorage 'mockup.view' (모든 목업 공통), 주소 ?view=screen|dev 가 우선. */
+(function () {
+  const root = document.documentElement, body = document.body;
+  const HIDE = '.note, .mock, .log, .plog, .runlog, #dbBox, [data-dev]';   // 요구사항 패널은 CSS 로만 숨김
+  const DEV_OPTS = ['optFname', 'optRefs', 'optHidden', 'optHid', 'optLog', 'optSrc'];
+  const KEEP_WRAP = '[data-mockctl], .mockctl, .sim, .opts, label, .key, dd, p';
+  const bar = document.querySelector('.topbar');
+  if (!bar || root.hasAttribute('data-mv')) return;
+
+  // 숨기는 상자 안의 목업 조건 컨트롤 → 옮길 묶음 (처음 읽을 때 한 번)
+  const conds = [];
+  document.querySelectorAll(HIDE).forEach(box => {
+    if (box.parentElement.closest(HIDE)) return;
+    box.querySelectorAll('input, select, textarea, button').forEach(c => {
+      if (DEV_OPTS.includes(c.id) || c.closest('.rb, [data-dev], ol, ul, table, #tblView, #dbBox') && !c.closest('[data-mockctl]')) return;
+      if (box.matches('.note') && c.disabled) return;   // 범례 견본
+      let w = c.closest(KEEP_WRAP);
+      if (!w || !box.contains(w) || w === box) w = c;
+      if (w.querySelector('#' + DEV_OPTS.join(', #'))) w = c;
+      if (!conds.some(x => x.contains(w))) {
+        for (let i = conds.length - 1; i >= 0; i--) if (w.contains(conds[i])) conds.splice(i, 1);
+        conds.push(w);
+      }
+    });
+  });
+  // 목업 조건 줄: 메뉴 경로 바로 아래
+  const strip = document.createElement('div');
+  strip.className = 'mv-cond';
+  strip.innerHTML = '<span class="mv-h" title="원본 화면에 없는 목업 전용 설정 (목업 설명)">목업 조건</span>';
+  const crumb = document.querySelector('.wrap .crumb') || document.querySelector('.crumb');
+  if (crumb) crumb.after(strip); else bar.after(strip);
+  const homes = new Map();
+
+  // 상단 바 가운데 스위치
+  const sw = document.createElement('span');
+  sw.className = 'mv-sw';
+  sw.innerHTML = '<button type="button" data-v="dev" title="노란 안내 상자·요구사항·REQ·OQ·처리 로그를 함께 봅니다">개발정보 보기</button>'
+    + '<button type="button" data-v="screen" title="기존 화면만 봅니다 (목업 조건은 남김)">화면만 보기</button>';
+  bar.insertBefore(sw, bar.lastElementChild);
+
+  let saved = null;
+  function set(v, store) {
+    if (v === root.getAttribute('data-mv')) return;
+    if (v === 'screen') {
+      if (body.classList.contains('focusing')) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      saved = { rp: body.classList.contains('rp-open'), opts: [] };
+      body.classList.remove('rp-open', 'focusing');
+      DEV_OPTS.forEach(id => { const o = document.getElementById(id); if (o && o.checked) { o.click(); saved.opts.push(id); } });
+      conds.forEach(w => { const mark = document.createComment('mv'); w.before(mark); homes.set(w, mark); strip.appendChild(w); });
+      strip.classList.toggle('on', conds.length > 0);
+    } else if (saved) {
+      conds.forEach(w => { const mark = homes.get(w); if (mark) { mark.replaceWith(w); homes.delete(w); } });
+      saved.opts.forEach(id => { const o = document.getElementById(id); if (o && !o.checked) o.click(); });
+      if (saved.rp) body.classList.add('rp-open');
+      saved = null;
+    }
+    root.setAttribute('data-mv', v);
+    sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+    if (store) try { localStorage.setItem('mockup.view', v); } catch (e) { /* 저장 못 해도 동작 */ }
+  }
+  sw.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) set(b.dataset.v, true); });
+
+  let start = 'dev';
+  try { start = localStorage.getItem('mockup.view') === 'screen' ? 'screen' : 'dev'; } catch (e) { /* 기본값 */ }
+  const q = new URLSearchParams(location.search).get('view');
+  if (q === 'screen' || q === 'dev') start = q;
+  root.setAttribute('data-mv', 'dev');
+  sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === 'dev')));
+  if (start === 'screen') set('screen', false);
+})();
+</script>
+<!-- mockup-view:end -->
+</body>
+</html>
